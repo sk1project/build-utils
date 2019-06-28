@@ -60,12 +60,17 @@ OPENSUSE42_2 = 'SuSE 42.2'
 OPENSUSE42_3 = 'SuSE 42.3'
 OPENSUSE15_0 = 'SuSE 15'
 
+CENTOS = 'centos'
+CENTOS6 = 'centos 6'
+CENTOS7 = 'centos 7'
+
 MARKERS = {
     MINT: ('mint', 'LinuxMint'),
     UBUNTU: ('ubuntu', 'Ubuntu'),
     DEBIAN: ('debian', 'Debian'),
     FEDORA: ('fc', 'Fedora'),
     OPENSUSE: ('opensuse', 'OpenSuse'),
+    CENTOS: ('el', 'CentOS'),
 }
 
 
@@ -73,7 +78,7 @@ class SystemFacts(object):
     def __init__(self):
         self.family, self.version = platform.dist()[:2]
 
-        # Workaround for Leap 15.0 bug
+        # Workaround for Leap 15.0
         if not self.family and not self.version:
             self.family, self.version = OPENSUSE, '15.0'
 
@@ -93,9 +98,10 @@ class SystemFacts(object):
         self.is_deb = self.family in [MINT, UBUNTU, DEBIAN]
         self.is_debian = self.family == DEBIAN
         self.is_ubuntu = self.family == UBUNTU
-        self.is_rpm = self.family in [FEDORA, OPENSUSE]
+        self.is_rpm = self.family in [FEDORA, OPENSUSE, CENTOS]
         self.is_fedora = self.family == FEDORA
         self.is_opensuse = self.family == OPENSUSE
+        self.is_centos = self.family == CENTOS
         self.is_src = all([self.is_64bit, self.is_deb, self.version == '16.04'])
         self.marker = MARKERS.get(self.family, ('', 'unknown'))[0]
         self.hmarker = MARKERS.get(self.family, ('Unknown', ''))[1]

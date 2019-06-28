@@ -76,6 +76,9 @@ UC2_RPM_DEPENDENCIES = {
                   'python-Pillow python-reportlab',
     OPENSUSE15_0: 'liblcms2-2 libpango-1_0-0 ImageMagick python-cairo '
                   'python-Pillow python-reportlab',
+
+    CENTOS6: 'lcms2 pango ImageMagick pycairo python-pillow python-reportlab',
+    CENTOS7: 'lcms2 pango ImageMagick pycairo python-pillow python-reportlab',
 }
 
 SK1_RPM_DEPENDENCIES = {
