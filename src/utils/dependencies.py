@@ -31,6 +31,7 @@ UC2_DEB_DEPENDENCIES = {
         # Workaround for Ubuntu 18.10
         if platform.dist()[1] != '18.10' else
         DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
+    UBUNTU19: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
 
     MINT17: DEB_GENERIC + 'libmagickwand5, python-pil',
     MINT18: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil',
@@ -47,6 +48,7 @@ SK1_DEB_DEPENDENCIES = {
     UBUNTU16: 'python-wxgtk3.0, python-cups',
     UBUNTU17: 'python-wxgtk3.0, python-cups',
     UBUNTU18: 'python-wxgtk3.0, python-cups',
+    UBUNTU19: 'python-wxgtk3.0, python-cups',
 
     MINT17: 'python-wxgtk2.8, python-cups',
     MINT18: 'python-wxgtk3.0, python-cups',
@@ -65,6 +67,7 @@ UC2_RPM_DEPENDENCIES = {
     FEDORA27: 'lcms2 pango ImageMagick pycairo python2-pillow python2-reportlab',
     FEDORA28: 'lcms2 pango ImageMagick python2-cairo python2-pillow python2-reportlab',
     FEDORA29: 'lcms2 pango ImageMagick python2-cairo python2-pillow python2-reportlab',
+    FEDORA30: 'lcms2 pango ImageMagick python2-cairo python2-pillow python2-reportlab',
 
     OPENSUSE13: 'liblcms2-2 libpango-1_0-0 ImageMagick python-cairo '
                 'python-Pillow python-reportlab',
@@ -88,7 +91,8 @@ SK1_RPM_DEPENDENCIES = {
     FEDORA26: 'wxPython python2-cups',
     FEDORA27: 'wxPython python2-cups',
     FEDORA28: 'python2-wxpython python2-cups',
-    FEDORA29: 'python2-wxpython python2-cups',
+    FEDORA29: 'python2-wxpython python-cups',
+    FEDORA30: 'python2-wxpython python-cups',
 
     OPENSUSE13: 'python-wxWidgets python-cups',
     OPENSUSE42: 'python-wxWidgets python-cups',
