@@ -98,3 +98,23 @@ def get_files_tree(path='.', ext='*'):
         files.sort()
         tree += files
     return tree
+
+
+def normalize_path(path='.'):
+    """
+    Returns absolute path
+    """
+    return os.path.expanduser(path) if path.startswith('~') \
+        else os.path.abspath(path)
+
+
+def getsize(path='.', count=False):
+    """
+    Returns size of file or recursive size of directory
+    """
+    if os.path.isfile(path):
+        return os.path.getsize(path)
+
+    files = get_filepaths(path)
+    sz = sum([os.path.getsize(f) for f in files])
+    return (sz, len(files)) if count else sz
