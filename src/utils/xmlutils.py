@@ -25,12 +25,15 @@ class XmlElement(object):
     tag = None
     attrs = None
     comment = None
+    content = None
     nl = False
 
-    def __init__(self, tag, kwargs):
+    def __init__(self, tag, kwargs=None, content=None):
         self.tag = tag
         self.childs = []
-        self.attrs = {key: value for key, value in kwargs.items()}
+        self.content = content
+        self.attrs = {key: value
+                      for key, value in kwargs.items()} if kwargs else {}
 
     def destroy(self):
         for child in self.childs:
@@ -68,5 +71,9 @@ class XmlElement(object):
             for child in self.childs:
                 child.write_xml(fp, indent + INDENT)
             fp.write('%s</%s>\n' % (tab, self.tag))
+        elif self.content:
+            fp.write('>')
+            fp.write(self.content)
+            fp.write('</%s>\n' % self.tag)
         else:
             fp.write(' />\n')

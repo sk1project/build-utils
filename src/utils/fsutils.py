@@ -112,9 +112,7 @@ def getsize(path='.', count=False):
     """
     Returns size of file or recursive size of directory
     """
-    if os.path.isfile(path):
-        return os.path.getsize(path)
-
-    files = get_filepaths(path)
-    sz = sum([os.path.getsize(f) for f in files])
-    return (sz, len(files)) if count else sz
+    sizes = [os.path.getsize(path)] if os.path.isfile(path) \
+        else [os.path.getsize(f) for f in get_files_tree(path)]
+    sz = sum(sizes)
+    return (sz, len(sizes)) if count else sz

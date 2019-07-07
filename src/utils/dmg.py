@@ -30,15 +30,19 @@ from . import fsutils
 def dmg_build(targets=None,
               dmg_filename='test.dmg',
               volume_name='Install',
-              dist_dir='.'):
+              dist_dir='.', **_kwargs):
 
     if not targets:
         raise Exception('DMG payload is not provided!')
 
-    sz = 0
-    for item in targets:
-        sz += fsutils.getsize(item)
+    sz = float(sum(fsutils.getsize(item) for item in targets))
     size = int(math.ceil(sz/10**6)) or 1
+
+    if os.path.exists('/tmp/%s' % dmg_filename):
+        os.remove('/tmp/%s' % dmg_filename)
+
+    if os.path.exists('/mnt/tmp_dmg'):
+        os.system('rm -rf /mnt/tmp_dmg')
 
     # File allocation
     os.system('dd if=/dev/zero of=/tmp/%s bs=1M '
