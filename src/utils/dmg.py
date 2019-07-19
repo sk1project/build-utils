@@ -31,6 +31,54 @@ def dmg_build(targets=None,
               dmg_filename='test.dmg',
               volume_name='Install',
               dist_dir='.', **_kwargs):
+    """
+    DMG generation using genisoimage.
+    Produces well blessed DMG image.
+
+    :param targets: target files and directories
+    :param dmg_filename:
+    :param volume_name: name for mounted volume
+    :param dist_dir: directory where saving DMG file
+    :param _kwargs: additional agrs
+    """
+
+    if not targets:
+        raise Exception('DMG payload is not provided!')
+
+    if os.path.exists('tmp_dmg'):
+        os.system('rm -rf tmp_dmg')
+
+    os.system('mkdir -p tmp_dmg')
+    if not os.path.exists(dist_dir):
+        os.makedirs(dist_dir)
+
+    # Copying
+    for item in targets:
+        if os.path.isfile(item):
+            shutil.copy(item, 'tmp_dmg')
+        else:
+            dst = os.path.join('tmp_dmg', os.path.basename(item))
+            shutil.copytree(item, dst)
+
+    dmg_file = os.path.join(dist_dir, dmg_filename)
+    os.system('genisoimage -V "%s" -D -R -apple -no-pad -o %s tmp_dmg' % (volume_name, dmg_file))
+    os.system('rm -rf tmp_dmg')
+
+
+def dmg_build2(targets=None,
+              dmg_filename='test.dmg',
+              volume_name='Install',
+              dist_dir='.', **_kwargs):
+    """
+    DMG generation using mkfs.hfsplus.
+    Not perfect because there is no volume bless
+
+    :param targets: target files and directories
+    :param dmg_filename:
+    :param volume_name: name for mounted volume
+    :param dist_dir: directory where saving DMG file
+    :param _kwargs: additional agrs
+    """
 
     if not targets:
         raise Exception('DMG payload is not provided!')
