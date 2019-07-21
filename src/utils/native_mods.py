@@ -43,6 +43,9 @@ def make_modules(src_path, include_path, lib_path=None):
         include_dirs = build.make_source_list(
             include_path,
             ['cairo', 'pycairo'])
+    elif platform.system() == 'Darwin':
+        include_dirs = pkgconfig.get_pkg_includes(['pycairo', 'cairo'])
+        cairo_libs = pkgconfig.get_pkg_libs(['pycairo', 'cairo'])
     elif os.name == 'posix':
         include_dirs = pkgconfig.get_pkg_includes(['pycairo', ])
         cairo_libs = pkgconfig.get_pkg_libs(['pycairo', ])
@@ -92,6 +95,11 @@ def make_modules(src_path, include_path, lib_path=None):
     if os.name == 'nt':
         include_dirs = build.make_source_list(
             include_path, ['cairo', 'pycairo', 'pango-1.0', 'glib-2.0'])
+    elif platform.system() == 'Darwin':
+        include_dirs = pkgconfig.get_pkg_includes(['pangocairo', 'pycairo',
+                                                   'pango', 'cairo'])
+        pango_libs = pkgconfig.get_pkg_libs(['pangocairo', 'pycairo',
+                                             'pango', 'cairo'])
     elif os.name == 'posix':
         include_dirs = pkgconfig.get_pkg_includes(['pangocairo', 'pycairo'])
         pango_libs = pkgconfig.get_pkg_libs(['pangocairo', ])
