@@ -59,6 +59,7 @@ class RpmBuilder(object):
             depends='',
 
             build_script='',
+            scripts = None,
             install_path='',
             data_files=None,
     ):
@@ -77,6 +78,8 @@ class RpmBuilder(object):
         self.url = url
         self.depends = depends
         self.build_script = build_script
+        self.scripts = ['%{_bindir}/' + os.path.basename(f) for f in scripts] \
+            if scripts else ['%{_bindir}/' + self.name]
         self.install_path = install_path
         self.data_files = data_files
 
@@ -113,7 +116,7 @@ class RpmBuilder(object):
     def copy_sources(self, file_path, file_name):
         self.tarball = self.rpmbuild_path + '/SOURCES/' + file_name
         os.system('cp %s %s' % (file_path, self.tarball))
-        os.remove(file_path)
+        #os.remove(file_path)
 
     def write_spec(self):
         content = [
@@ -140,7 +143,7 @@ class RpmBuilder(object):
             'rm -rf $RPM_BUILD_ROOT',
             '/usr/bin/python2 %s install --root=$RPM_BUILD_ROOT' % self.build_script,
             '',
-            '%files', '%{_bindir}/' + self.name,
+            '%files', '\n'.join(self.scripts),
             self.install_path.replace('/usr/', '%{_usr}/'),
         ]
         for item in self.data_files:
