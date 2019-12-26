@@ -1,4 +1,4 @@
-FROM opensuse/leap:15.0
+FROM opensuse/leap:15.1
 MAINTAINER sk1.project.org@gmail.com
 
 RUN zypper -n refresh && zypper -n update && zypper -n clean

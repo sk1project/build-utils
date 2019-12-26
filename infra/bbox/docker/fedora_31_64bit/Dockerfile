@@ -1,4 +1,4 @@
-FROM fedora:30
+FROM fedora:31
 MAINTAINER sk1.project.org@gmail.com
 
 RUN yum -y update && yum clean all

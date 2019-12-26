@@ -1,4 +1,4 @@
-FROM i386/centos:7
+FROM i386/centos:8
 MAINTAINER sk1.project.org@gmail.com
 
 RUN yum -y update && yum clean all
