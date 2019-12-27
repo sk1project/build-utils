@@ -42,6 +42,7 @@ DEBIAN = 'debian'
 DEBIAN7 = 'debian 7'
 DEBIAN8 = 'debian 8'
 DEBIAN9 = 'debian 9'
+DEBIAN10 = 'debian 10'
 
 FEDORA = 'fedora'
 FEDORA21 = 'fedora 21'
@@ -54,6 +55,7 @@ FEDORA27 = 'fedora 27'
 FEDORA28 = 'fedora 28'
 FEDORA29 = 'fedora 29'
 FEDORA30 = 'fedora 30'
+FEDORA31 = 'fedora 31'
 
 OPENSUSE = 'SuSE'
 OPENSUSE13 = 'SuSE 13'
@@ -61,10 +63,12 @@ OPENSUSE42 = 'SuSE 42.1'
 OPENSUSE42_2 = 'SuSE 42.2'
 OPENSUSE42_3 = 'SuSE 42.3'
 OPENSUSE15_0 = 'SuSE 15'
+OPENSUSE15_1 = 'SuSE 15.1'
 
 CENTOS = 'centos'
 CENTOS6 = 'centos 6'
 CENTOS7 = 'centos 7'
+CENTOS8 = 'centos 8'
 
 MARKERS = {
     MINT: ('mint', 'LinuxMint'),
