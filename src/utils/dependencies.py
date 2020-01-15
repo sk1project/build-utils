@@ -40,7 +40,7 @@ UC2_DEB_DEPENDENCIES = {
     DEBIAN7: DEB_GENERIC + 'libmagickwand5, python-imaging',
     DEBIAN8: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil',
     DEBIAN9: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil',
-    DEBIAN10: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil',
+    DEBIAN10: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
 }
 
 SK1_DEB_DEPENDENCIES = {
