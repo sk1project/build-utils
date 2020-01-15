@@ -97,7 +97,7 @@ SK1_RPM_DEPENDENCIES = {
     FEDORA26: 'wxPython python2-cups',
     FEDORA27: 'wxPython python2-cups',
     FEDORA28: 'python2-wxpython python2-cups',
-    FEDORA29: 'python2-wxpython python-cups',
+    FEDORA29: 'python2-wxpython python2-cups',
     FEDORA30: 'python2-wxpython python-cups',
     FEDORA31: 'python2-wxpython python-cups',
 
