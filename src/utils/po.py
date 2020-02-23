@@ -2,7 +2,7 @@
 #
 #   Localization utils
 #
-# 	Copyright (C) 2018 by Igor E. Novikov
+# 	Copyright (C) 2018 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@ def build_pot(paths, po_file='messages.po', error_logs=False):
     open(file_list, 'w').write('\n'.join(files))
     ret += os.system('xgettext -f %s -L Python -o %s 2>%s' %
                      (file_list, po_file, error_logs))
+    if ret:
+        print 'Error while POT file update'
     ret += os.system('rm -f %s' % file_list)
     if not ret:
         print 'POT file updated'

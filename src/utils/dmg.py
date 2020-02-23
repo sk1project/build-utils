@@ -2,7 +2,7 @@
 #
 #   macOS dmg build
 #
-# 	Copyright (C) 2019 by Igor E. Novikov
+# 	Copyright (C) 2019 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
