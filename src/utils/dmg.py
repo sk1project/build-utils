@@ -2,7 +2,7 @@
 #
 #   macOS dmg build
 #
-# 	Copyright (C) 2019 by Ihor E. Novikov
+# 	Copyright (C) 2019-2020 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -61,14 +61,15 @@ def dmg_build(targets=None,
             shutil.copytree(item, dst)
 
     dmg_file = os.path.join(dist_dir, dmg_filename)
-    os.system('genisoimage -V "%s" -D -R -apple -no-pad -o %s tmp_dmg' % (volume_name, dmg_file))
+    os.system('genisoimage -V "%s" -D -R -apple '
+              '-no-pad -o %s tmp_dmg' % (volume_name, dmg_file))
     os.system('rm -rf tmp_dmg')
 
 
 def dmg_build2(targets=None,
-              dmg_filename='test.dmg',
-              volume_name='Install',
-              dist_dir='.', **_kwargs):
+               dmg_filename='test.dmg',
+               volume_name='Install',
+               dist_dir='.', **_kwargs):
     """
     DMG generation using mkfs.hfsplus.
     Not perfect because there is no volume bless
@@ -84,7 +85,7 @@ def dmg_build2(targets=None,
         raise Exception('DMG payload is not provided!')
 
     sz = float(sum(fsutils.getsize(item) for item in targets))
-    size = int(math.ceil(sz/10**6)) or 1
+    size = int(math.ceil(sz / 10 ** 6)) or 1
 
     if os.path.exists('/tmp/%s' % dmg_filename):
         os.remove('/tmp/%s' % dmg_filename)

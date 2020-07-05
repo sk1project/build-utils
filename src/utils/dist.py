@@ -2,7 +2,7 @@
 #
 #   OS dist staff
 #
-# 	Copyright (C) 2018 by Ihor E. Novikov
+# 	Copyright (C) 2018-2020 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 # 	You should have received a copy of the GNU General Public License
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import platform
 
 WINDOWS = 'Windows'
@@ -62,7 +63,7 @@ OPENSUSE13 = 'SuSE 13'
 OPENSUSE42 = 'SuSE 42.1'
 OPENSUSE42_2 = 'SuSE 42.2'
 OPENSUSE42_3 = 'SuSE 42.3'
-OPENSUSE15_0 = 'SuSE 15'
+OPENSUSE15_0 = 'SuSE 15.0'
 OPENSUSE15_1 = 'SuSE 15.1'
 
 CENTOS = 'centos'
@@ -80,16 +81,46 @@ MARKERS = {
 }
 
 
+def read_ini_file(path):
+    ret = {}
+    if os.path.exists(path):
+        with open(path, 'r') as fileptr:
+            while True:
+                line = fileptr.readline()
+                if not line:
+                    break
+                if '=' in line:
+                    parts = [part.strip().strip('"')
+                             for part in line.split('=')]
+                    ret[parts[0]] = parts[1]
+    return ret
+
+
+def get_dist():
+    release_data = read_ini_file('/etc/os-release')
+    version = release_data.get('VERSION_ID')
+    ini_name = release_data.get('NAME')
+    name = {
+        'Linux Mint': 'LinuxMint',
+    }.get(ini_name, ini_name)
+    name = name.split()[0] if name else name
+    family = {
+        'openSUSE': OPENSUSE,
+        'Ubuntu': UBUNTU,
+        'Debian': DEBIAN,
+        'Fedora': FEDORA,
+        'CentOS': CENTOS,
+        'LinuxMint': MINT,
+    }.get(name)
+    return family, version
+
+
 class SystemFacts(object):
     def __init__(self):
-        self.family, self.version = platform.dist()[:2]
+        self.family, self.version = get_dist()
 
-        # Workaround for Leap 15.0
-        if not self.family and not self.version:
-            self.family, self.version = OPENSUSE, '15.0'
-
-        # Workaround for Suse 42.x
-        if self.family == OPENSUSE and self.version.startswith('42'):
+        # Workaround for Suse
+        if self.family == OPENSUSE:
             self.sid = '%s %s' % (self.family, self.version)
         else:
             self.sid = '%s %s' % (self.family, self.version.split('.')[0])

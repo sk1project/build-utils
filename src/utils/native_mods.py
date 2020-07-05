@@ -2,7 +2,7 @@
 #
 #   Native modules build
 #
-# 	Copyright (C) 2015-2018 by Ihor E. Novikov
+# 	Copyright (C) 2015-2020 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -19,11 +19,10 @@
 
 import os
 import platform
+from distutils.core import Extension
 
 from . import build
 from . import pkgconfig
-
-from distutils.core import Extension
 
 
 def make_modules(src_path, include_path, lib_path=None):
@@ -136,5 +135,40 @@ def make_modules(src_path, include_path, lib_path=None):
         libraries=libimg_libraries,
         extra_compile_args=compile_args)
     modules.append(libimg_module)
+
+    return modules
+
+
+def make_cp2_modules(src_path, include_path, lib_path=None):
+    if lib_path is None:
+        lib_path = []
+    modules = []
+
+    # --- LCMS2 module
+
+    pycms_files = ['_cms2.c', ]
+    pycms_libraries = []
+    extra_compile_args = []
+
+    if os.name == 'nt':
+        if platform.architecture()[0] == '32bit':
+            pycms_libraries = ['lcms2_static']
+        else:
+            pycms_libraries = ['liblcms2-2']
+    elif os.name == 'posix':
+        pycms_libraries = pkgconfig.get_pkg_libs(['lcms2', ])
+        extra_compile_args = ["-Wall"]
+
+    pycms_src = os.path.join(src_path, 'uc2', 'cms')
+    files = build.make_source_list(pycms_src, pycms_files)
+    include_dirs = [include_path, ]
+    pycms_module = Extension(
+        'uc2.cms._cms',
+        define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
+        sources=files, include_dirs=include_dirs,
+        library_dirs=lib_path,
+        libraries=pycms_libraries,
+        extra_compile_args=extra_compile_args)
+    modules.append(pycms_module)
 
     return modules

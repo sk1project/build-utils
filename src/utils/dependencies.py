@@ -2,7 +2,7 @@
 #
 #   Setup dependencies module
 #
-# 	Copyright (C) 2016-2018 by Ihor E. Novikov
+# 	Copyright (C) 2016-2020 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # 	You should have received a copy of the GNU General Public License
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from dist import *
+from .dist import *
 
 DEB_GENERIC = 'liblcms2-2 (>=2.0), python (>=2.4), python (<<3.0), '
 DEB_GENERIC += 'python-cairo, python-reportlab, '
@@ -29,7 +29,7 @@ UC2_DEB_DEPENDENCIES = {
     UBUNTU17: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil',
     UBUNTU18: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil'
         # Workaround for Ubuntu 18.10
-        if platform.dist()[1] != '18.10' else
+        if get_dist()[1] != '18.10' else
         DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
     UBUNTU19: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
 
@@ -40,7 +40,7 @@ UC2_DEB_DEPENDENCIES = {
     DEBIAN7: DEB_GENERIC + 'libmagickwand5, python-imaging',
     DEBIAN8: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil',
     DEBIAN9: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil',
-    DEBIAN10: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
+    DEBIAN10: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil',
 }
 
 SK1_DEB_DEPENDENCIES = {
@@ -97,7 +97,7 @@ SK1_RPM_DEPENDENCIES = {
     FEDORA26: 'wxPython python2-cups',
     FEDORA27: 'wxPython python2-cups',
     FEDORA28: 'python2-wxpython python2-cups',
-    FEDORA29: 'python2-wxpython python2-cups',
+    FEDORA29: 'python2-wxpython python-cups',
     FEDORA30: 'python2-wxpython python-cups',
     FEDORA31: 'python2-wxpython python-cups',
 
@@ -106,41 +106,46 @@ SK1_RPM_DEPENDENCIES = {
     OPENSUSE42_2: 'python-wxWidgets python-cups',
     OPENSUSE42_3: 'python-wxWidgets python-cups',
     OPENSUSE15_0: 'python-wxWidgets python-cups',
-    OPENSUSE15_1: 'python-wxWidgets python2-pycups',
+    OPENSUSE15_1: 'python-wxWidgets python-cups',
+}
+
+CP2_DEB_DEFAULT = 'liblcms2-2, libgtk-3-0, python3-cairo, python3-gi, python3-gi-cairo, python3-willow'
+
+CP2_DEB_DEPENDENCIES = {
+    DEBIAN9: 'liblcms2-2, libgtk-3-0, python3-cairo, python3-gi, python3-gi-cairo, python3-pil',
+    DEBIAN10: 'liblcms2-2, libgtk-3-0, python3-cairo, python3-gi, python3-gi-cairo, python3-pil',
+}
+
+CP2_RPM_DEPENDENCIES = {
+    FEDORA27: 'lcms2 python3-cairo pygobject3 python3-gobject cairo-gobject gobject-introspection python3-pillow',
+    FEDORA30: 'lcms2 python3-cairo pygobject3 python3-gobject cairo-gobject gobject-introspection python3-pillow',
+    FEDORA31: 'lcms2 python3-cairo pygobject3 python3-gobject cairo-gobject gobject-introspection python3-pillow',
+    OPENSUSE15_0: 'liblcms2-2 libgtk-3-0 python3-cairo python3-gi python3-gi-cairo python3-Pillow',
+    OPENSUSE15_1: 'liblcms2-2 libgtk-3-0 python3-cairo python3-gi python3-gi-cairo python3-Pillow',
 }
 
 
 def get_uc2_deb_depend():
-    if SYSFACTS.sid in UC2_DEB_DEPENDENCIES:
-        return UC2_DEB_DEPENDENCIES[SYSFACTS.sid]
-    return ''
+    return UC2_DEB_DEPENDENCIES.get(SYSFACTS.sid, '')
 
 
 def get_sk1_deb_depend():
-    uc2_dep = get_uc2_deb_depend()
-    sk1_dep = ''
-    if SYSFACTS.sid in SK1_DEB_DEPENDENCIES:
-        sk1_dep = SK1_DEB_DEPENDENCIES[SYSFACTS.sid]
-    if uc2_dep and sk1_dep:
-        sk1_dep = '%s, %s' % (uc2_dep, sk1_dep)
-    elif uc2_dep:
-        sk1_dep = uc2_dep
-    return sk1_dep
+    return ', '.join([get_uc2_deb_depend(),
+                      SK1_DEB_DEPENDENCIES.get(SYSFACTS.sid, '')])
+
+
+def get_cp2_deb_depend():
+    return CP2_DEB_DEPENDENCIES.get(SYSFACTS.sid, CP2_DEB_DEFAULT)
 
 
 def get_uc2_rpm_depend():
-    if SYSFACTS.sid in UC2_RPM_DEPENDENCIES:
-        return UC2_RPM_DEPENDENCIES[SYSFACTS.sid]
-    return ''
+    return UC2_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')
 
 
 def get_sk1_rpm_depend():
-    uc2_dep = get_uc2_rpm_depend()
-    sk1_dep = ''
-    if SYSFACTS.sid in SK1_RPM_DEPENDENCIES:
-        sk1_dep = SK1_RPM_DEPENDENCIES[SYSFACTS.sid]
-    if uc2_dep and sk1_dep:
-        sk1_dep = '%s %s' % (uc2_dep, sk1_dep)
-    elif uc2_dep:
-        sk1_dep = uc2_dep
-    return sk1_dep
+    return ' '.join([get_uc2_rpm_depend(),
+                    SK1_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')])
+
+
+def get_cp2_rpm_depend():
+    return CP2_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')

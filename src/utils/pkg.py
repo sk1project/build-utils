@@ -2,7 +2,7 @@
 #
 #   macOS pkg build
 #
-# 	Copyright (C) 2019 by Ihor E. Novikov
+# 	Copyright (C) 2019-2020 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -173,7 +173,7 @@ class PkgBuilder:
         pkg_info.add(XmlElement('bundle-version'))
 
         pkg_info_file = os.path.join(self.pkg_dir, 'PackageInfo')
-        with open(pkg_info_file, 'wb') as fileptr:
+        with open(pkg_info_file, 'w') as fileptr:
             fileptr.write(
                 '<?xml version="1.0" encoding="utf-8" standalone="no"?>\n')
             pkg_info.write_xml(fileptr)
@@ -241,7 +241,7 @@ class PkgBuilder:
         }, content='#base.pkg'))
 
         distr_file = os.path.join(self.flat_dir, 'Distribution')
-        with open(distr_file, 'wb') as fileptr:
+        with open(distr_file, 'w') as fileptr:
             fileptr.write(
                 '<?xml version="1.0" encoding="utf-8" standalone="yes"?>\n')
             distr.write_xml(fileptr)

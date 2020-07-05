@@ -2,7 +2,7 @@
 #
 #   RPM builder
 #
-# 	Copyright (C) 2018 by Ihor E. Novikov
+# 	Copyright (C) 2018-2020 by Ihor E. Novikov
 #
 # 	This program is free software: you can redistribute it and/or modify
 # 	it under the terms of the GNU General Public License as published by
@@ -54,12 +54,12 @@ class RpmBuilder(object):
             maintainer='',
             summary='',
             description='',
-            license='',
+            license_='',
             url='',
             depends='',
 
             build_script='',
-            scripts = None,
+            scripts=None,
             install_path='',
             data_files=None,
     ):
@@ -74,7 +74,7 @@ class RpmBuilder(object):
         self.maintainer = maintainer
         self.summary = summary
         self.description = description
-        self.license = license
+        self.license = license_
         self.url = url
         self.depends = depends
         self.build_script = build_script
@@ -86,7 +86,7 @@ class RpmBuilder(object):
         self.current_path = os.path.abspath('.')
         self.rpmbuild_path = os.path.expanduser('~/rpmbuild')
         self.spec_path = os.path.join(self.rpmbuild_path,
-                                      'SPECS', '%s.spec' % self.name)
+                                      'SPECS', 'python3-%s.spec' % self.name)
         self.dist_dir = os.path.join(self.current_path, 'dist')
         self.tarball = ''
 
@@ -116,11 +116,11 @@ class RpmBuilder(object):
     def copy_sources(self, file_path, file_name):
         self.tarball = self.rpmbuild_path + '/SOURCES/' + file_name
         os.system('cp %s %s' % (file_path, self.tarball))
-        #os.remove(file_path)
+        # os.remove(file_path)
 
     def write_spec(self):
         content = [
-            'Name: %s' % self.name,
+            'Name: python3-%s' % self.name,
             'Version: %s' % self.version,
             'Release: %s' % self.release,
             'Summary: %s' % self.summary,
@@ -133,15 +133,17 @@ class RpmBuilder(object):
             content.append('Requires: %s' % item)
         content += [
             '',
+            '%global __python %{__python3}',
+            '',
             '%description', self.description,
             '',
             '%prep', '%autosetup -n {}-{}'.format(self.name, self.version),
             '',
-            '%build', '/usr/bin/python2 %s build' % self.build_script,
+            '%build', '/usr/bin/python3 %s build' % self.build_script,
             '',
             '%install',
-            'rm -rf $RPM_BUILD_ROOT',
-            '/usr/bin/python2 %s install --root=$RPM_BUILD_ROOT' % self.build_script,
+            'rm -rf $RPM_BUILD_ROOT', '/usr/bin/python3 %s install --root='
+                                      '$RPM_BUILD_ROOT' % self.build_script,
             '',
             '%files', '\n'.join(self.scripts),
             self.install_path.replace('/usr/', '%{_usr}/'),
@@ -156,10 +158,10 @@ class RpmBuilder(object):
         open(self.spec_path, 'w').write('\n'.join(content))
 
     def build_rpm(self):
-        os.system('rpmbuild -bb %s --define "_topdir %s"' % (self.spec_path,
-                                                             self.rpmbuild_path))
-        os.system('cp `find %s -name "*.rpm"` %s/' % (self.rpmbuild_path,
-                                                      self.dist_dir))
+        os.system('rpmbuild -bb %s --define "_topdir %s"' %
+                  (self.spec_path, self.rpmbuild_path))
+        os.system('cp `find %s -name "*.rpm"` %s/' %
+                  (self.rpmbuild_path, self.dist_dir))
 
     def clear_rpmbuild(self):
         if os.path.exists(self.rpmbuild_path):
