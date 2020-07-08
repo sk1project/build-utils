@@ -32,30 +32,30 @@ def make_modules(src_path, include_path, lib_path=None):
 
     # --- Cairo module
 
-    cairo_src = os.path.join(src_path, 'uc2', 'libcairo')
-    files = build.make_source_list(cairo_src, ['_libcairo.c', ])
-
-    include_dirs = []
-    cairo_libs = ['cairo']
-
-    if os.name == 'nt':
-        include_dirs = build.make_source_list(
-            include_path,
-            ['cairo', 'pycairo'])
-    elif platform.system() == 'Darwin':
-        include_dirs = pkgconfig.get_pkg_includes(['pycairo', 'cairo'])
-        cairo_libs = pkgconfig.get_pkg_libs(['pycairo', 'cairo'])
-    elif os.name == 'posix':
-        include_dirs = pkgconfig.get_pkg_includes(['pycairo', ])
-        cairo_libs = pkgconfig.get_pkg_libs(['pycairo', ])
-
-    cairo_module = Extension(
-        'uc2.libcairo._libcairo',
-        define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
-        sources=files, include_dirs=include_dirs,
-        library_dirs=lib_path,
-        libraries=cairo_libs)
-    modules.append(cairo_module)
+    # cairo_src = os.path.join(src_path, 'uc2', 'libcairo')
+    # files = build.make_source_list(cairo_src, ['_libcairo.c', ])
+    #
+    # include_dirs = []
+    # cairo_libs = ['cairo']
+    #
+    # if os.name == 'nt':
+    #     include_dirs = build.make_source_list(
+    #         include_path,
+    #         ['cairo', 'pycairo'])
+    # elif platform.system() == 'Darwin':
+    #     include_dirs = pkgconfig.get_pkg_includes(['pycairo', 'cairo'])
+    #     cairo_libs = pkgconfig.get_pkg_libs(['pycairo', 'cairo'])
+    # elif os.name == 'posix':
+    #     include_dirs = pkgconfig.get_pkg_includes(['pycairo', ])
+    #     cairo_libs = pkgconfig.get_pkg_libs(['pycairo', ])
+    #
+    # cairo_module = Extension(
+    #     'uc2.libcairo._libcairo',
+    #     define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
+    #     sources=files, include_dirs=include_dirs,
+    #     library_dirs=lib_path,
+    #     libraries=cairo_libs)
+    # modules.append(cairo_module)
 
     # --- LCMS2 module
 
@@ -86,55 +86,55 @@ def make_modules(src_path, include_path, lib_path=None):
 
     # --- Pango module
 
-    pango_src = os.path.join(src_path, 'uc2', 'libpango')
-    files = build.make_source_list(pango_src, ['_libpango.c', ])
-    pango_libs = [
-        'pango-1.0', 'pangocairo-1.0', 'cairo', 'glib-2.0', 'gobject-2.0']
-
-    if os.name == 'nt':
-        include_dirs = build.make_source_list(
-            include_path, ['cairo', 'pycairo', 'pango-1.0', 'glib-2.0'])
-    elif platform.system() == 'Darwin':
-        include_dirs = pkgconfig.get_pkg_includes(['pangocairo', 'pango',
-                                                   'pycairo', 'cairo'])
-        pango_libs = pkgconfig.get_pkg_libs(['pangocairo', 'pango', 'pycairo',
-                                             'cairo'])
-    elif os.name == 'posix':
-        include_dirs = pkgconfig.get_pkg_includes(['pangocairo', 'pycairo'])
-        pango_libs = pkgconfig.get_pkg_libs(['pangocairo', ])
-
-    pango_module = Extension(
-        'uc2.libpango._libpango',
-        define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
-        sources=files, include_dirs=include_dirs,
-        library_dirs=lib_path,
-        libraries=pango_libs)
-    modules.append(pango_module)
+    # pango_src = os.path.join(src_path, 'uc2', 'libpango')
+    # files = build.make_source_list(pango_src, ['_libpango.c', ])
+    # pango_libs = [
+    #     'pango-1.0', 'pangocairo-1.0', 'cairo', 'glib-2.0', 'gobject-2.0']
+    #
+    # if os.name == 'nt':
+    #     include_dirs = build.make_source_list(
+    #         include_path, ['cairo', 'pycairo', 'pango-1.0', 'glib-2.0'])
+    # elif platform.system() == 'Darwin':
+    #     include_dirs = pkgconfig.get_pkg_includes(['pangocairo', 'pango',
+    #                                                'pycairo', 'cairo'])
+    #     pango_libs = pkgconfig.get_pkg_libs(['pangocairo', 'pango', 'pycairo',
+    #                                          'cairo'])
+    # elif os.name == 'posix':
+    #     include_dirs = pkgconfig.get_pkg_includes(['pangocairo', 'pycairo'])
+    #     pango_libs = pkgconfig.get_pkg_libs(['pangocairo', ])
+    #
+    # pango_module = Extension(
+    #     'uc2.libpango._libpango',
+    #     define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
+    #     sources=files, include_dirs=include_dirs,
+    #     library_dirs=lib_path,
+    #     libraries=pango_libs)
+    # modules.append(pango_module)
 
     # --- ImageMagick module
 
-    compile_args = []
-    libimg_libraries = ['CORE_RL_wand_', 'CORE_RL_magick_']
-    im_ver = '6'
-
-    if os.name == 'nt':
-        include_dirs = [include_path, include_path + '/ImageMagick']
-    elif os.name == 'posix':
-        im_ver = pkgconfig.get_pkg_version('MagickWand')[0]
-        libimg_libraries = pkgconfig.get_pkg_libs(['MagickWand', ])
-        include_dirs = pkgconfig.get_pkg_includes(['MagickWand', ])
-        compile_args = pkgconfig.get_pkg_cflags(['MagickWand', ])
-
-    libimg_src = os.path.join(src_path, 'uc2', 'libimg')
-    files = build.make_source_list(libimg_src, ['_libimg%s.c' % im_ver, ])
-    libimg_module = Extension(
-        'uc2.libimg._libimg',
-        define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
-        sources=files, include_dirs=include_dirs,
-        library_dirs=lib_path,
-        libraries=libimg_libraries,
-        extra_compile_args=compile_args)
-    modules.append(libimg_module)
+    # compile_args = []
+    # libimg_libraries = ['CORE_RL_wand_', 'CORE_RL_magick_']
+    # im_ver = '6'
+    #
+    # if os.name == 'nt':
+    #     include_dirs = [include_path, include_path + '/ImageMagick']
+    # elif os.name == 'posix':
+    #     im_ver = pkgconfig.get_pkg_version('MagickWand')[0]
+    #     libimg_libraries = pkgconfig.get_pkg_libs(['MagickWand', ])
+    #     include_dirs = pkgconfig.get_pkg_includes(['MagickWand', ])
+    #     compile_args = pkgconfig.get_pkg_cflags(['MagickWand', ])
+    #
+    # libimg_src = os.path.join(src_path, 'uc2', 'libimg')
+    # files = build.make_source_list(libimg_src, ['_libimg%s.c' % im_ver, ])
+    # libimg_module = Extension(
+    #     'uc2.libimg._libimg',
+    #     define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
+    #     sources=files, include_dirs=include_dirs,
+    #     library_dirs=lib_path,
+    #     libraries=libimg_libraries,
+    #     extra_compile_args=compile_args)
+    # modules.append(libimg_module)
 
     return modules
 

@@ -33,7 +33,7 @@ def get_pkg_includes(pkg_names):
         process = subprocess.Popen(["pkg-config", "--cflags-only-I", item],
                                    stdout=subprocess.PIPE)
         output, err = process.communicate()
-        names = output.replace('-I', '').strip().split(' ')
+        names = output.decode().replace('-I', '').strip().split(' ')
         for name in names:
             if name not in includes:
                 includes.append(name)
@@ -59,7 +59,7 @@ def get_pkg_cflags(pkg_names):
         process = subprocess.Popen(["pkg-config", "--cflags-only-other", item],
                                    stdout=subprocess.PIPE)
         output, err = process.communicate()
-        names = output.strip().split(' ')
+        names = output.decode().strip().split(' ')
         for name in names:
             if name not in flags:
                 flags.append(name)

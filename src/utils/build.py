@@ -155,6 +155,12 @@ def compile_sources(folder='build'):
     compileall.compile_dir(folder, quiet=1)
 
 
+def _find_extension(path, prefix, suffix):
+    for item in os.listdir(path):
+        if item.startswith(prefix) and item.endswith(suffix):
+            return item
+
+
 def copy_modules(modules, src_root='src'):
     """
     Copies native modules into src/
@@ -177,9 +183,18 @@ def copy_modules(modules, src_root='src'):
         marker = 'win64'
 
     for item in modules:
-        path = os.path.join(*item.name.split('.')) + ext
+        path = os.path.join(*item.name.split('.'))
+        dirname = os.path.dirname(path)
+        basename = os.path.basename(path)
+        filename = _find_extension(os.path.join(prefix, dirname), basename, ext)
+        if not filename:
+            continue
+        path = os.path.join(dirname, filename)
+
         src = os.path.join(prefix, path)
         dst = os.path.join(src_root, path)
+        if os.path.exists(dst):
+            os.remove(dst)
         shutil.copy(src, dst)
         if os.name == 'nt':
             dst2 = os.path.join('%s-devres' % marker, 'pyd',
