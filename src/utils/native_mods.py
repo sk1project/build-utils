@@ -59,30 +59,30 @@ def make_modules(src_path, include_path, lib_path=None):
 
     # --- LCMS2 module
 
-    pycms_files = ['_cms2.c', ]
-    pycms_libraries = []
+    lcms2_files = ['_lcms2.c', ]
+    lcms2_libraries = []
     extra_compile_args = []
 
     if os.name == 'nt':
         if platform.architecture()[0] == '32bit':
-            pycms_libraries = ['lcms2_static']
+            lcms2_libraries = ['lcms2_static']
         else:
-            pycms_libraries = ['liblcms2-2']
+            lcms2_libraries = ['liblcms2-2']
     elif os.name == 'posix':
-        pycms_libraries = pkgconfig.get_pkg_libs(['lcms2', ])
+        lcms2_libraries = pkgconfig.get_pkg_libs(['lcms2', ])
         extra_compile_args = ["-Wall"]
 
-    pycms_src = os.path.join(src_path, 'uc2', 'cms')
-    files = build.make_source_list(pycms_src, pycms_files)
+    lcms2_src = os.path.join(src_path, 'uc2', 'cms', 'lcms2')
+    files = build.make_source_list(lcms2_src, lcms2_files)
     include_dirs = [include_path, ]
-    pycms_module = Extension(
-        'uc2.cms._cms',
+    lcms2_module = Extension(
+        'uc2.cms._lcms2',
         define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
         sources=files, include_dirs=include_dirs,
         library_dirs=lib_path,
-        libraries=pycms_libraries,
+        libraries=lcms2_libraries,
         extra_compile_args=extra_compile_args)
-    modules.append(pycms_module)
+    modules.append(lcms2_module)
 
     # --- Pango module
 
@@ -146,29 +146,29 @@ def make_cp2_modules(src_path, include_path, lib_path=None):
 
     # --- LCMS2 module
 
-    pycms_files = ['_cms2.c', ]
-    pycms_libraries = []
+    lcms2_files = ['_lcms2.c', ]
+    lcms2_libraries = []
     extra_compile_args = []
 
     if os.name == 'nt':
         if platform.architecture()[0] == '32bit':
-            pycms_libraries = ['lcms2_static']
+            lcms2_libraries = ['lcms2_static']
         else:
-            pycms_libraries = ['liblcms2-2']
+            lcms2_libraries = ['liblcms2-2']
     elif os.name == 'posix':
-        pycms_libraries = pkgconfig.get_pkg_libs(['lcms2', ])
+        lcms2_libraries = pkgconfig.get_pkg_libs(['lcms2', ])
         extra_compile_args = ["-Wall"]
 
-    pycms_src = os.path.join(src_path, 'uc2', 'cms')
-    files = build.make_source_list(pycms_src, pycms_files)
+    lcms2_src = os.path.join(src_path, 'uc2', 'cms', 'lcms2')
+    files = build.make_source_list(lcms2_src, lcms2_files)
     include_dirs = [include_path, ]
-    pycms_module = Extension(
-        'uc2.cms._cms',
+    lcms2_module = Extension(
+        'uc2.cms._lcms2',
         define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
         sources=files, include_dirs=include_dirs,
         library_dirs=lib_path,
-        libraries=pycms_libraries,
+        libraries=lcms2_libraries,
         extra_compile_args=extra_compile_args)
-    modules.append(pycms_module)
+    modules.append(lcms2_module)
 
     return modules
