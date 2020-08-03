@@ -32,30 +32,30 @@ def make_modules(src_path, include_path, lib_path=None):
 
     # --- Cairo module
 
-    # cairo_src = os.path.join(src_path, 'uc2', 'libcairo')
-    # files = build.make_source_list(cairo_src, ['_libcairo.c', ])
-    #
-    # include_dirs = []
-    # cairo_libs = ['cairo']
-    #
-    # if os.name == 'nt':
-    #     include_dirs = build.make_source_list(
-    #         include_path,
-    #         ['cairo', 'pycairo'])
-    # elif platform.system() == 'Darwin':
-    #     include_dirs = pkgconfig.get_pkg_includes(['pycairo', 'cairo'])
-    #     cairo_libs = pkgconfig.get_pkg_libs(['pycairo', 'cairo'])
-    # elif os.name == 'posix':
-    #     include_dirs = pkgconfig.get_pkg_includes(['pycairo', ])
-    #     cairo_libs = pkgconfig.get_pkg_libs(['pycairo', ])
-    #
-    # cairo_module = Extension(
-    #     'uc2.libcairo._libcairo',
-    #     define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
-    #     sources=files, include_dirs=include_dirs,
-    #     library_dirs=lib_path,
-    #     libraries=cairo_libs)
-    # modules.append(cairo_module)
+    cairo_src = os.path.join(src_path, 'uc2', 'libcairo')
+    files = build.make_source_list(cairo_src, ['_libcairo.c', ])
+
+    include_dirs = []
+    cairo_libs = ['cairo']
+
+    if os.name == 'nt':
+        include_dirs = build.make_source_list(
+            include_path,
+            ['cairo', 'pycairo'])
+    elif platform.system() == 'Darwin':
+        include_dirs = pkgconfig.get_pkg_includes(['pycairo', 'cairo'])
+        cairo_libs = pkgconfig.get_pkg_libs(['pycairo', 'cairo'])
+    elif os.name == 'posix':
+        include_dirs = pkgconfig.get_pkg_includes(['pycairo', ])
+        cairo_libs = pkgconfig.get_pkg_libs(['pycairo', ])
+
+    cairo_module = Extension(
+        'uc2.libcairo._libcairo',
+        define_macros=[('MAJOR_VERSION', '2'), ('MINOR_VERSION', '0')],
+        sources=files, include_dirs=include_dirs,
+        library_dirs=lib_path,
+        libraries=cairo_libs)
+    modules.append(cairo_module)
 
     # --- LCMS2 module
 
@@ -77,7 +77,7 @@ def make_modules(src_path, include_path, lib_path=None):
     include_dirs = [include_path, ]
     lcms2_module = Extension(
         'uc2.cms._lcms2',
-        define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
+        define_macros=[('MAJOR_VERSION', '2'), ('MINOR_VERSION', '0')],
         sources=files, include_dirs=include_dirs,
         library_dirs=lib_path,
         libraries=lcms2_libraries,
