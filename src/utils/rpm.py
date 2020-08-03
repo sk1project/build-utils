@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 #   RPM builder
 #
@@ -54,7 +53,7 @@ class RpmBuilder(object):
             maintainer='',
             summary='',
             description='',
-            license_='',
+            license='',
             url='',
             depends='',
 
@@ -74,7 +73,7 @@ class RpmBuilder(object):
         self.maintainer = maintainer
         self.summary = summary
         self.description = description
-        self.license = license_
+        self.license = license
         self.url = url
         self.depends = depends
         self.build_script = build_script
@@ -85,8 +84,7 @@ class RpmBuilder(object):
 
         self.current_path = os.path.abspath('.')
         self.rpmbuild_path = os.path.expanduser('~/rpmbuild')
-        self.spec_path = os.path.join(self.rpmbuild_path,
-                                      'SPECS', 'python3-%s.spec' % self.name)
+        self.spec_path = os.path.join(self.rpmbuild_path, 'SPECS', 'python3-%s.spec' % self.name)
         self.dist_dir = os.path.join(self.current_path, 'dist')
         self.tarball = ''
 
@@ -142,8 +140,7 @@ class RpmBuilder(object):
             '%build', '/usr/bin/python3 %s build' % self.build_script,
             '',
             '%install',
-            'rm -rf $RPM_BUILD_ROOT', '/usr/bin/python3 %s install --root='
-                                      '$RPM_BUILD_ROOT' % self.build_script,
+            'rm -rf $RPM_BUILD_ROOT', '/usr/bin/python3 %s install --root=$RPM_BUILD_ROOT' % self.build_script,
             '',
             '%files', '\n'.join(self.scripts),
             self.install_path.replace('/usr/', '%{_usr}/'),
@@ -158,10 +155,8 @@ class RpmBuilder(object):
         open(self.spec_path, 'w').write('\n'.join(content))
 
     def build_rpm(self):
-        os.system('rpmbuild -bb %s --define "_topdir %s"' %
-                  (self.spec_path, self.rpmbuild_path))
-        os.system('cp `find %s -name "*.rpm"` %s/' %
-                  (self.rpmbuild_path, self.dist_dir))
+        os.system('rpmbuild -bb %s --define "_topdir %s"' % (self.spec_path, self.rpmbuild_path))
+        os.system('cp `find %s -name "*.rpm"` %s/' % (self.rpmbuild_path, self.dist_dir))
 
     def clear_rpmbuild(self):
         if os.path.exists(self.rpmbuild_path):
