@@ -24,7 +24,7 @@ def get_pkg_version(pkg_name):
     process = subprocess.Popen(["pkg-config", "--modversion", pkg_name],
                                stdout=subprocess.PIPE)
     output, err = process.communicate()
-    return output.strip()
+    return output.decode().strip()
 
 
 def get_pkg_includes(pkg_names):

@@ -113,28 +113,28 @@ def make_modules(src_path, include_path, lib_path=None):
 
     # --- ImageMagick module
 
-    # compile_args = []
-    # libimg_libraries = ['CORE_RL_wand_', 'CORE_RL_magick_']
-    # im_ver = '6'
-    #
-    # if os.name == 'nt':
-    #     include_dirs = [include_path, include_path + '/ImageMagick']
-    # elif os.name == 'posix':
-    #     im_ver = pkgconfig.get_pkg_version('MagickWand')[0]
-    #     libimg_libraries = pkgconfig.get_pkg_libs(['MagickWand', ])
-    #     include_dirs = pkgconfig.get_pkg_includes(['MagickWand', ])
-    #     compile_args = pkgconfig.get_pkg_cflags(['MagickWand', ])
-    #
-    # libimg_src = os.path.join(src_path, 'uc2', 'libimg')
-    # files = build.make_source_list(libimg_src, ['_libimg%s.c' % im_ver, ])
-    # libimg_module = Extension(
-    #     'uc2.libimg._libimg',
-    #     define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
-    #     sources=files, include_dirs=include_dirs,
-    #     library_dirs=lib_path,
-    #     libraries=libimg_libraries,
-    #     extra_compile_args=compile_args)
-    # modules.append(libimg_module)
+    compile_args = []
+    libimg_libraries = ['CORE_RL_wand_', 'CORE_RL_magick_']
+    im_ver = '6'
+
+    if os.name == 'nt':
+        include_dirs = [include_path, include_path + '/ImageMagick']
+    elif os.name == 'posix':
+        im_ver = pkgconfig.get_pkg_version('MagickWand')[0]
+        libimg_libraries = pkgconfig.get_pkg_libs(['MagickWand', ])
+        include_dirs = pkgconfig.get_pkg_includes(['MagickWand', ])
+        compile_args = pkgconfig.get_pkg_cflags(['MagickWand', ])
+
+    libimg_src = os.path.join(src_path, 'uc2', 'libimg')
+    files = build.make_source_list(libimg_src, ['_libimg%s.c' % im_ver, ])
+    libimg_module = Extension(
+        'uc2.libimg._libimg',
+        define_macros=[('MAJOR_VERSION', '1'), ('MINOR_VERSION', '0')],
+        sources=files, include_dirs=include_dirs,
+        library_dirs=lib_path,
+        libraries=libimg_libraries,
+        extra_compile_args=compile_args)
+    modules.append(libimg_module)
 
     return modules
 
