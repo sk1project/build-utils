@@ -30,7 +30,7 @@ def _make_lcms2_module(src_path: str, include_path: str, lib_paths: tp.List[str]
 
     :param src_path: (str) path to extension source code
     :param include_path: (str) path to included headers
-    :param lib_paths: (list) linked libraries list of paths
+    :param lib_paths: (list) list of linked libraries paths
     :return: (distutils.core.Extension) initialized extension object
     """
     lcms2_files = ['_lcms2.c', ]
@@ -66,7 +66,7 @@ def _make_cairo_module(src_path: str, include_path: str, lib_paths: tp.List[str]
 
     :param src_path: (str) path to extension source code
     :param include_path: (str) path to included headers
-    :param lib_paths: (list) linked libraries list of paths
+    :param lib_paths: (list) list of linked libraries paths
     :return: (distutils.core.Extension) initialized extension object
     """
     cairo_src = os.path.join(src_path, 'uc2', 'libcairo')
@@ -100,7 +100,7 @@ def _make_pango_module(src_path: str, include_path: str, lib_paths: tp.List[str]
 
     :param src_path: (str) path to extension source code
     :param include_path: (str) path to included headers
-    :param lib_paths: (list) linked libraries list of paths
+    :param lib_paths: (list) list of linked libraries paths
     :return: (distutils.core.Extension) initialized extension object
     """
     pango_src = os.path.join(src_path, 'uc2', 'libpango')
@@ -133,7 +133,7 @@ def _make_libimg_module(src_path: str, include_path: str, lib_paths: tp.List[str
 
     :param src_path: (str) path to extension source code
     :param include_path: (str) path to included headers
-    :param lib_paths: (list) linked libraries list of paths
+    :param lib_paths: (list) list of linked libraries paths
     :return: (distutils.core.Extension) initialized extension object
     """
     compile_args = []
@@ -171,7 +171,7 @@ def make_modules(src_path: str,
 
     :param src_path: (str) path to extension source code
     :param include_path: (str) path to included headers
-    :param lib_paths: (list|None) linked libraries list of paths
+    :param lib_paths: (list|None) list of linked libraries paths or None
     :return: (list) list of initialized extension objects
     """
     lib_paths = lib_paths or []
@@ -193,7 +193,7 @@ def make_cp2_modules(src_path: str,
 
     :param src_path: (str) path to extension source code
     :param include_path: (str) path to included headers
-    :param lib_paths: (list|None) linked libraries list of paths
+    :param lib_paths: (list|None) list of linked libraries paths or None
     :return: (list) list of initialized extension objects
     """
     lib_paths = lib_paths or []
