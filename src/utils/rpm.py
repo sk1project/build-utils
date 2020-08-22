@@ -17,51 +17,50 @@
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import typing as tp
 
 
-class RpmBuilder(object):
-    """
-    Represents rpm package build object.
-    The object implements "setup.py bdist_rpm" command.
-    Works after regular "setup.py build" command and
-    constructs rpm package using build result of "setup.py sdist".
-    Arguments:
-
-    name - package names
-    version - package version
-    release - release marker
-    arch - system architecture (i686, x86_64), if not provided will be
-            detected automatically
-    maintainer - package maintainer (John Smith <js@email.x>)
-    summary - short package description
-    description - long description as defined by Debian rules
-    license - project license
-    url - project homepage
-    depends - list of dependencies
-
-    build_cmd - command to build project
-    install_dir - installation path
-    data_files - list of data files and appropriate destination directories.
+class RpmBuilder:
+    """Represents rpm package build object. The object implements "setup.py bdist_rpm" command.
+    Works after regular "setup.py build" command and constructs rpm package using build result of "setup.py sdist".
     """
 
     def __init__(
             self,
-            name='',
-            version='',
-            release='',
-            arch='',
-            maintainer='',
-            summary='',
-            description='',
-            license='',
-            url='',
-            depends='',
+            name: str = '',
+            version: str = '',
+            release: str = '',
+            arch: str = '',
+            maintainer: str = '',
+            summary: str = '',
+            description: str = '',
+            license_: str = '',
+            url: str = '',
+            depends: str = '',
 
-            build_script='',
-            scripts=None,
-            install_path='',
-            data_files=None,
-    ):
+            build_script: str = '',
+            scripts: tp.Union[tp.List[str], None] = None,
+            install_path: str = '',
+            data_files: tp.Union[tp.List[str], None] = None,
+    ) -> None:
+        """Initialize and runs rpm package build
+
+        :param name: (str) package names
+        :param version: (str) package version
+        :param release: (str) release marker
+        :param arch: (str) system architecture (i686, x86_64), if not provided will be detected automatically
+        :param maintainer: (str) package maintainer (John Smith <js@email.x>)
+        :param summary: (str) short package description
+        :param description: (str) long description as defined by Debian rules
+        :param license_: (str) application license
+        :param url: (str) project homepage
+        :param depends: (str) list of dependencies
+
+        :param build_script: (str) build script name (usually setup.py)
+        :param scripts: (list|None) list of installed executable
+        :param install_path: (str) installation path
+        :param data_files: (list|None) list of data files and appropriate destination directories
+        """
 
         data_files = data_files or []
         release = release or '0'
@@ -73,7 +72,7 @@ class RpmBuilder(object):
         self.maintainer = maintainer
         self.summary = summary
         self.description = description
-        self.license = license
+        self.license = license_
         self.url = url
         self.depends = depends
         self.build_script = build_script
@@ -88,15 +87,28 @@ class RpmBuilder(object):
         self.dist_dir = os.path.join(self.current_path, 'dist')
         self.tarball = ''
 
-        self.clear_rpmbuild()
-        self.create_rpmbuild()
-        self.copy_sources(*self.find_tarball())
-        self.write_spec()
-        os.chdir(self.rpmbuild_path + '/SPECS')
-        self.build_rpm()
-        self.clear_rpmbuild()
+        self._build()
 
-    def find_tarball(self):
+    def _build(self):
+        """Build pipeline"""
+        self._clear_rpmbuild()
+        self._create_rpmbuild()
+        self._copy_sources(*self._find_tarball())
+        self._write_spec()
+        os.chdir(self.rpmbuild_path + '/SPECS')
+        self._build_rpm()
+        self._clear_rpmbuild()
+
+    def _create_rpmbuild(self) -> None:
+        """Creates rpm build directory structure"""
+        for item in ('', 'BUILD', 'BUILDROOT', 'SOURCES', 'SPECS', 'RPMS', 'SRPMS'):
+            os.mkdir(f'{self.rpmbuild_path}/{item}')
+
+    def _find_tarball(self) -> tp.Tuple[str, str]:
+        """Searches source code tarball in ./dist directory
+
+        :return: (tuple) tarball path and tarball name
+        """
         if not os.path.exists(self.dist_dir):
             raise IOError('There is no ./dist source folder!')
         file_items = os.listdir(self.dist_dir)
@@ -106,41 +118,35 @@ class RpmBuilder(object):
                 return file_path, item
         raise IOError('There is no source tarball in ./dist folder!')
 
-    def create_rpmbuild(self):
-        for item in ('', 'BUILD', 'BUILDROOT', 'SOURCES',
-                     'SPECS', 'RPMS', 'SRPMS'):
-            os.mkdir('%s/%s' % (self.rpmbuild_path, item))
-
-    def copy_sources(self, file_path, file_name):
+    def _copy_sources(self, file_path, file_name) -> None:
+        """Copies source code tarball"""
         self.tarball = self.rpmbuild_path + '/SOURCES/' + file_name
-        os.system('cp %s %s' % (file_path, self.tarball))
-        # os.remove(file_path)
+        os.system(f'cp {file_path} {self.tarball}')
 
-    def write_spec(self):
+    def _write_spec(self) -> None:
+        """Creates RPM spec-file"""
         content = [
-            'Name: python3-%s' % self.name,
-            'Version: %s' % self.version,
-            'Release: %s' % self.release,
-            'Summary: %s' % self.summary,
+            f'Name: python3-{self.name}',
+            f'Version: {self.version}',
+            f'Release: {self.release}',
+            f'Summary: {self.summary}',
             '',
-            'License: %s' % self.license,
-            'URL: %s' % self.url,
-            'Source: %s' % self.tarball,
-            '']
-        for item in self.depends:
-            content.append('Requires: %s' % item)
+            f'License: {self.license}',
+            f'URL: {self.url}',
+            f'Source: {self.tarball}',
+            ''] + [f'Requires: {item}' for item in self.depends]
         content += [
             '',
             '%global __python %{__python3}',
             '',
             '%description', self.description,
             '',
-            '%prep', '%autosetup -n {}-{}'.format(self.name, self.version),
+            '%prep', f'%autosetup -n {self.name}-{self.version}',
             '',
-            '%build', '/usr/bin/python3 %s build' % self.build_script,
+            '%build', f'/usr/bin/python3 {self.build_script} build',
             '',
             '%install',
-            'rm -rf $RPM_BUILD_ROOT', '/usr/bin/python3 %s install --root=$RPM_BUILD_ROOT' % self.build_script,
+            'rm -rf $RPM_BUILD_ROOT', f'/usr/bin/python3 {self.build_script} install --root=$RPM_BUILD_ROOT',
             '',
             '%files', '\n'.join(self.scripts),
             self.install_path.replace('/usr/', '%{_usr}/'),
@@ -149,15 +155,18 @@ class RpmBuilder(object):
             if item[0].startswith('/usr/share/'):
                 path = item[0].replace('/usr/share/', '%{_datadir}/')
                 for filename in item[1]:
-                    content.append('%s/%s' % (path, filename.split('/')[-1]))
+                    filename = filename.split('/')[-1]
+                    content.append(f'{path}/{filename}')
         content += ['', ]
 
         open(self.spec_path, 'w').write('\n'.join(content))
 
-    def build_rpm(self):
-        os.system('rpmbuild -bb %s --define "_topdir %s"' % (self.spec_path, self.rpmbuild_path))
-        os.system('cp `find %s -name "*.rpm"` %s/' % (self.rpmbuild_path, self.dist_dir))
+    def _build_rpm(self) -> None:
+        """Runs 'rpmbuild -bb' command"""
+        os.system(f'rpmbuild -bb {self.spec_path} --define "_topdir {self.rpmbuild_path}"')
+        os.system(f'cp `find {self.rpmbuild_path} -name "*.rpm"` {self.dist_dir}/')
 
-    def clear_rpmbuild(self):
+    def _clear_rpmbuild(self) -> None:
+        """Clears build artifacts"""
         if os.path.exists(self.rpmbuild_path):
-            os.system('rm -rf %s' % self.rpmbuild_path)
+            os.system(f'rm -rf {self.rpmbuild_path}')
