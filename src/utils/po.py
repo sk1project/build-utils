@@ -16,14 +16,22 @@
 # 	You should have received a copy of the GNU General Public License
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import logging
+import os
+import typing as tp
+
 from . import fsutils
 
 LOG = logging.getLogger(__name__)
 
 
-def build_pot(paths, po_file='messages.po', error_logs=False):
+def build_pot(paths: tp.List[str], pot_file: str = 'messages.po', error_logs: bool = False) -> None:
+    """Builds POT file collecting messages for translation across sources
+
+    :param paths: (list) source code paths
+    :param pot_file: (str) POT file path to collect messages to
+    :param error_logs: (bool) flag to collect error logs
+    """
     ret = 0
     files = []
     error_logs = 'warnings.log' if error_logs else '/dev/null'
@@ -32,14 +40,19 @@ def build_pot(paths, po_file='messages.po', error_logs=False):
         files += fsutils.get_files_tree(path, 'py')
     with open(file_list, 'w') as fileptr:
         fileptr.write('\n'.join(files))
-    ret += os.system('xgettext -f %s -L Python -o %s 2>%s' %
-                     (file_list, po_file, error_logs))
-    ret += os.system('rm -f %s' % file_list)
+    ret += os.system(f'xgettext -f {file_list} -L Python -o {pot_file} 2>{error_logs}')
+    ret += os.system(f'rm -f {file_list}')
     if not ret:
         LOG.info('POT file updated')
 
 
-def build_locales(src_path, dest_path, textdomain):
+def build_locales(src_path: str, dest_path: str, textdomain: str) -> None:
+    """Compile PO-files into MO-files.
+
+    :param src_path: (str) path to PO-files directory
+    :param dest_path: (str) path to LC_MESSAGES directory
+    :param textdomain: (str) application text domain
+    """
     LOG.info('Building locales')
     for item in fsutils.get_filenames(src_path, 'po'):
         lang = item.split('.')[0]
