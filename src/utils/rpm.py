@@ -36,12 +36,12 @@ class RpmBuilder:
             description: str = '',
             license_: str = '',
             url: str = '',
-            depends: str = '',
+            depends: tp.List[str] = '',
 
             build_script: str = '',
             scripts: tp.Union[tp.List[str], None] = None,
             install_path: str = '',
-            data_files: tp.Union[tp.List[str], None] = None,
+            data_files: tp.Union[tp.List[tp.Tuple[str, tp.List[str]]], None] = None,
     ) -> None:
         """Initialize and runs rpm package build
 
@@ -54,20 +54,16 @@ class RpmBuilder:
         :param description: (str) long description as defined by Debian rules
         :param license_: (str) application license
         :param url: (str) project homepage
-        :param depends: (str) list of dependencies
+        :param depends: (list) list of dependencies
 
         :param build_script: (str) build script name (usually setup.py)
         :param scripts: (list|None) list of installed executable
         :param install_path: (str) installation path
         :param data_files: (list|None) list of data files and appropriate destination directories
         """
-
-        data_files = data_files or []
-        release = release or '0'
-
         self.name = name
         self.version = version
-        self.release = release
+        self.release = release or '0'
         self.arch = arch
         self.maintainer = maintainer
         self.summary = summary
@@ -79,7 +75,7 @@ class RpmBuilder:
         self.scripts = ['%{_bindir}/' + os.path.basename(f) for f in scripts] \
             if scripts else ['%{_bindir}/' + self.name]
         self.install_path = install_path
-        self.data_files = data_files
+        self.data_files = data_files or []
 
         self.current_path = os.path.abspath('.')
         self.rpmbuild_path = os.path.expanduser('~/rpmbuild')
