@@ -16,21 +16,30 @@
 # 	You should have received a copy of the GNU General Public License
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import typing as tp
 import subprocess
 
 
-def get_pkg_version(pkg_name):
-    process = subprocess.Popen(["pkg-config", "--modversion", pkg_name],
-                               stdout=subprocess.PIPE)
+def get_pkg_version(pkg_name: str) -> str:
+    """Returns version of requested package
+
+    :param pkg_name: (str) name of requested package
+    :return: (str) version of requested package
+    """
+    process = subprocess.Popen(["pkg-config", "--modversion", pkg_name], stdout=subprocess.PIPE)
     output, err = process.communicate()
     return output.decode().strip()
 
 
-def get_pkg_includes(pkg_names):
+def get_pkg_includes(pkg_names: tp.List[str]) -> tp.List[str]:
+    """Returns includes for requested package
+
+    :param pkg_names: (list) package names
+    :return: (list) include list
+    """
     includes = []
     for item in pkg_names:
-        process = subprocess.Popen(["pkg-config", "--cflags-only-I", item],
-                                   stdout=subprocess.PIPE)
+        process = subprocess.Popen(["pkg-config", "--cflags-only-I", item], stdout=subprocess.PIPE)
         output, err = process.communicate()
         names = output.decode().replace('-I', '').strip().split(' ')
         for name in names:
@@ -39,11 +48,15 @@ def get_pkg_includes(pkg_names):
     return includes
 
 
-def get_pkg_libs(pkg_names):
+def get_pkg_libs(pkg_names: tp.List[str]) -> tp.List[str]:
+    """Returns libraries for requested package
+
+    :param pkg_names: (list) package names
+    :return: (list) libs list
+    """
     libs = []
     for item in pkg_names:
-        process = subprocess.Popen(["pkg-config", "--libs-only-l", item],
-                                   stdout=subprocess.PIPE)
+        process = subprocess.Popen(["pkg-config", "--libs-only-l", item], stdout=subprocess.PIPE)
         output, err = process.communicate()
         names = output.decode().replace('-l', '').strip().split(' ')
         for name in names:
@@ -52,11 +65,15 @@ def get_pkg_libs(pkg_names):
     return libs
 
 
-def get_pkg_cflags(pkg_names):
+def get_pkg_cflags(pkg_names: tp.List[str]) -> tp.List[str]:
+    """Returns compiler flags for requested package
+
+    :param pkg_names: (list) package names
+    :return: (list) cflags list
+    """
     flags = []
     for item in pkg_names:
-        process = subprocess.Popen(["pkg-config", "--cflags-only-other", item],
-                                   stdout=subprocess.PIPE)
+        process = subprocess.Popen(["pkg-config", "--cflags-only-other", item], stdout=subprocess.PIPE)
         output, err = process.communicate()
         names = output.decode().strip().split(' ')
         for name in names:
