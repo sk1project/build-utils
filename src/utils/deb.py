@@ -16,10 +16,11 @@
 # 	You should have received a copy of the GNU General Public License
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import logging
 import os
 import platform
 import sys
-import logging
+import typing as tp
 
 LOG = logging.getLogger(__name__)
 
@@ -32,7 +33,12 @@ logging.addLevelName(MK_CODE, 'CREATING')
 logging.addLevelName(CP_CODE, 'COPYING')
 
 
-def get_size(start_path='.'):
+def get_size(start_path: str = '.') -> int:
+    """Calcs recursively total file size in directory
+
+    :param start_path: (str) target directory
+    :return: (int) total file size
+    """
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(start_path):
         for f in filenames:
@@ -41,147 +47,153 @@ def get_size(start_path='.'):
     return total_size
 
 
-def _make_dir(path):
-    if not os.path.lexists(path):
-        LOG.log(MK_CODE, '%s directory.', path)
+def _make_dir(path: str) -> None:
+    """Creates directory if not exists it
+
+    :param path: (str) directory path
+    """
+    if not os.path.exists(path):
+        LOG.log(MK_CODE, f'{path} directory.')
+        # noinspection PyBroadException
         try:
             os.makedirs(path)
-        except:
-            raise IOError('Error while creating %s directory.' % path)
+        except Exception:
+            raise IOError(f'Error while creating {path} directory.')
 
 
-def copy_scripts(folder, scripts):
+def copy_scripts(path: str, scripts: tp.List[str]) -> None:
+    """Copies scripts into destination directory and makes them executable.
+    If directory not exists creates it.
+
+    :param path: (str) destination directory
+    :param scripts: (list) list of scripts
+    """
     if not scripts:
         return
-    _make_dir(folder)
+    _make_dir(path)
     for item in scripts:
-        LOG.log(CP_CODE, '%s -> %s', item, folder)
-        if os.system('cp %s %s' % (item, folder)):
-            raise IOError('Cannot copying %s -> %s' % (item, folder))
+        LOG.log(CP_CODE, f'{item} -> {path}')
+        if os.system(f'cp {item} {path}'):
+            raise IOError(f'Cannot copying {item} -> {path}')
         filename = os.path.basename(item)
-        path = os.path.join(folder, filename)
-        if os.path.isfile(path):
-            LOG.log(MK_CODE, '%s as executable', path)
-            if os.system('chmod +x %s' % path):
-                raise IOError('Cannot set executable flag for %s' % path)
+        filepath = os.path.join(path, filename)
+        if os.path.isfile(filepath):
+            LOG.log(MK_CODE, f'{filepath} as executable')
+            if os.system(f'chmod +x {filepath}'):
+                raise IOError(f'Cannot set executable flag for {filepath}')
 
 
-def copy_files(path, files):
+def copy_files(path: str, files: tp.List[str]):
+    """Copies files into destination directory.
+    If directory not exists creates it.
+
+    :param path: (str) destination directory
+    :param files: (list) list of files
+    """
     if files and not os.path.isdir(path):
         _make_dir(path)
     if not files:
         return
+    space = ' ' * 10
     for item in files:
-        msg = '%s -> %s' % (item, path)
+        msg = f'{item} -> {path}'
         if len(msg) > 80:
-            msg = '%s -> \n%s%s' % (item, ' ' * 10, path)
+            msg = f'{item} -> \n{space}{path}'
         LOG.log(CP_CODE, msg)
-        if os.system('cp %s %s' % (item, path)):
-            raise IOError('Cannot copying %s -> %s' % (item, path))
+        if os.system(f'cp {item} {path}'):
+            raise IOError(f'Cannot copying {item} -> {path}')
 
 
 class DebBuilder:
-    """
-    Represents deb package build object.
+    """Represents deb package build object.
     The object implements "setup.py bdist_deb" command.
     Works after regular "setup.py build" command and
     constructs deb package using build result in build/ directory.
-    Arguments:
-
-    name - package names
-    version - package version
-    arch - system architecture (amd64, i386, all), if not provided will be
-            detected automatically
-    maintainer - package maintainer (John Smith <js@email.x>)
-    depends - comma separated string of dependencies
-    section - package section (default 'python')
-    priority - package priority for users (default 'optional')
-    homepage - project homepage
-    description - short package description
-    long_description - long description as defined by Debian rules
-    package_dirs - list of root python packages
-    scripts - list of executable scripts
-    data_files - list of data files and appropriate destination directories.
-    deb_scripts - list of Debian package scripts.
     """
+    name: str
+    package_dirs: tp.Dict[str, str]
+    package_data: tp.Dict[str, tp.List[str]]
+    scripts: tp.List[str]
+    data_files: tp.List[tp.Tuple[str, tp.List[str]]]
+    deb_scripts: tp.List[str]
 
-    name = None
-    package_dirs = {}
-    package_data = {}
-    scripts = []
-    data_files = []
-    deb_scripts = []
+    package: str
+    version: str
+    arch: str
+    maintainer: str
+    installed_size: str
+    depends: str
+    section: str = 'python'
+    priority: str = 'optional'
+    homepage: str
+    description: str
+    long_description: str
 
-    package = ''
-    version = None
-    arch = ''
-    maintainer = ''
-    installed_size = 0
-    depends = ''
-    section = 'python'
-    priority = 'optional'
-    homepage = ''
-    description = ''
-    long_description = ''
-
-    package_name = ''
-    py_version = ''
-    machine = ''
-    build_dir = 'build/deb-root'
-    deb_dir = 'build/deb-root/DEBIAN'
-    src = ''
-    dst = ''
-    bin_dir = ''
-    pixmaps_dir = ''
-    apps_dir = ''
+    package_name: str
+    py_version: str
+    machine: str
+    build_dir: str = 'build/deb-root'
+    deb_dir: str = 'build/deb-root/DEBIAN'
+    src: str
+    dst: str
+    bin_dir: str
 
     def __init__(
             self,
-            name='',
-            version='',
-            arch='',
-            maintainer='',
-            depends='',
-            section='',
-            priority='',
-            homepage='',
-            description='',
-            long_description='',
-            package_dirs=None,
-            package_data=None,
-            scripts=None,
-            data_files=None,
-            deb_scripts=None,
-            dst=''):
+            name: str = '',
+            version: str = '',
+            arch: str = '',
+            maintainer: str = '',
+            depends: str = '',
+            section: str = '',
+            priority: str = '',
+            homepage: str = '',
+            description: str = '',
+            long_description: str = '',
+            package_dirs: tp.Optional[tp.Dict[str, str]] = None,
+            package_data: tp.Optional[tp.Dict[str, tp.List[str]]] = None,
+            scripts: tp.List[str] = None,
+            data_files: tp.Optional[tp.List[tp.Tuple[str, tp.List[str]]]] = None,
+            deb_scripts: tp.Optional[tp.List[str]] = None,
+            dst: str = '') -> None:
+        """Initializes and runs DEB package build
 
-        deb_scripts = deb_scripts or []
-        data_files = data_files or []
-        scripts = scripts or []
-        package_dirs = package_dirs or []
-        package_data = package_data or {}
-
+        :param name: (str) package name
+        :param version: (str) package version
+        :param arch: (str) system architecture (amd64, i386, all), if not provided will be detected automatically
+        :param maintainer: (str) package maintainer (John Smith <js@email.x>)
+        :param depends: (str) comma separated string of dependencies
+        :param section: (str) package section (default 'python')
+        :param priority: (str) package priority for users (default 'optional')
+        :param homepage: (str) project homepage
+        :param description: (str) short package description
+        :param long_description: (str) long description as defined by Debian rules
+        :param package_dirs: (dict) dict of root python packages
+        :param package_data: (dict) dict of non python files and appropriate destination directories
+        :param scripts: (list) list of executable scripts
+        :param data_files: (list) list of data files and appropriate destination directories
+        :param deb_scripts: (list) list of Debian package scripts
+        :param dst: (str) installation path
+        """
         self.name = name
         self.version = version
         self.arch = arch
         self.maintainer = maintainer
         self.depends = depends
-        if section:
-            self.section = section
-        if priority:
-            self.priority = priority
+        self.section = section or self.section
+        self.priority = priority or self.priority
         self.homepage = homepage
         self.description = description
         self.long_description = long_description
 
-        self.package_dirs = package_dirs
-        self.package_data = package_data
-        self.scripts = scripts
-        self.data_files = data_files
-        self.deb_scripts = deb_scripts
-        if dst:
-            self.dst = dst
+        self.package_dirs = package_dirs or {}
+        self.package_data = package_data or {}
+        self.scripts = scripts or []
+        self.data_files = data_files or []
+        self.deb_scripts = deb_scripts or []
+        self.dst = dst
 
-        self.package = 'python3-' + self.name
+        self.package = f'python3-{self.name}'
         self.py_version = '.'.join(sys.version.split()[0].split('.')[:2])
 
         if not self.arch:
@@ -190,25 +202,24 @@ class DebBuilder:
 
         self.machine = platform.machine()
 
-        self.src = 'build/lib.linux-%s-%s' % (self.machine, self.py_version)
+        self.src = f'build/lib.linux-{self.machine}-{self.py_version}'
 
         if not self.dst:
-            path = '%s/usr/lib/python%s/dist-packages'
-            self.dst = path % (self.build_dir, self.py_version)
+            self.dst = f'{self.build_dir}/usr/lib/python{self.py_version}/dist-packages'
         else:
             self.dst = self.build_dir + self.dst
-        self.bin_dir = '%s/usr/bin' % self.build_dir
+        self.bin_dir = f'{self.build_dir}/usr/bin'
 
-        self.package_name = 'python3-%s-%s_%s.deb' % (
-            self.name, self.version, self.arch)
+        self.package_name = f'python3-{self.name}-{self.version}_{self.arch}.deb'
         self.build()
 
-    def clear_build(self):
+    def clear_build(self) -> None:
+        """Clears build artifacts
+        """
         if os.path.lexists(self.build_dir):
-            LOG.log(RM_CODE, '%s directory.', self.build_dir)
-            if os.system('rm -rf ' + self.build_dir):
-                raise IOError(
-                    'Error while removing %s directory.' % self.build_dir)
+            LOG.log(RM_CODE, f'{self.build_dir} directory.')
+            if os.system(f'rm -rf {self.build_dir}'):
+                raise IOError(f'Error while removing {self.build_dir} directory.')
         if os.path.lexists('dist'):
             LOG.log(RM_CODE, 'Cleaning dist/ directory.')
             if os.system('rm -rf dist/*.deb'):
@@ -216,7 +227,9 @@ class DebBuilder:
         else:
             _make_dir('dist')
 
-    def write_control(self):
+    def write_control(self) -> None:
+        """Writes Debian control file
+        """
         _make_dir(self.deb_dir)
         control_list = [
             ['Package', self.package],
@@ -233,39 +246,44 @@ class DebBuilder:
         ]
         path = os.path.join(self.deb_dir, 'control')
         LOG.log(MK_CODE, 'Writing Debian control file.')
+        # noinspection PyBroadException
         try:
             control = open(path, 'w')
             for item in control_list:
                 name, val = item
                 if val:
                     if name:
-                        control.write('%s: %s\n' % (name, val))
+                        control.write(f'{name}: {val}\n')
                     else:
-                        control.write('%s\n' % val)
+                        control.write(f'{val}\n')
             control.close()
-        except:
+        except Exception:
             raise IOError('Error while writing Debian control file.')
 
-    def copy_build(self):
+    def copy_build(self) -> None:
+        """Copies project build
+        """
         for item in os.listdir(self.src):
             path = os.path.join(self.src, item)
             if os.path.isdir(path):
-                LOG.log(CP_CODE, '%s -> %s', path, self.dst)
-                if os.system('cp -R %s %s' % (path, self.dst)):
-                    raise IOError(
-                        'Error while copying %s -> %s' % (path, self.dst))
+                LOG.log(CP_CODE, f'{path} -> {self.dst}')
+                if os.system(f'cp -R {path} {self.dst}'):
+                    raise IOError(f'Error while copying {path} -> {self.dst}')
             elif os.path.isfile(path):
-                LOG.log(CP_CODE, '%s -> %s', path, self.dst)
-                if os.system('cp %s %s' % (path, self.dst)):
-                    raise IOError(
-                        'Error while copying %s -> %s' % (path, self.dst))
+                LOG.log(CP_CODE, f'{path} -> {self.dst}')
+                if os.system(f'cp {path} {self.dst}'):
+                    raise IOError(f'Error while copying {path} -> {self.dst}')
 
-    def copy_data_files(self):
+    def copy_data_files(self) -> None:
+        """Copies extra files
+        """
         for item in self.data_files:
             path, files = item
             copy_files(self.build_dir + path, files)
 
-    def copy_package_data_files(self):
+    def copy_package_data_files(self) -> None:
+        """Copies package data files
+        """
         files = []
         pkgs = self.package_data.keys()
         for pkg in pkgs:
@@ -290,22 +308,24 @@ class DebBuilder:
             path, files = item
             copy_files(path, files)
 
-    def make_package(self):
-        os.system('chmod -R 755 %s' % self.build_dir)
-        LOG.log(MK_CODE, '%s package.', self.package_name)
-        if os.system('sudo dpkg --build %s/ dist/%s' % (
-                self.build_dir, self.package_name)):
-            raise IOError('Cannot create package %s' % self.package_name)
+    def make_package(self) -> None:
+        """Makes deb package using dpkg
+        """
+        os.system(f'chmod -R 755 {self.build_dir}')
+        LOG.log(MK_CODE, f'{self.package_name} package.')
+        if os.system(f'sudo dpkg --build {self.build_dir}/ dist/{self.package_name}'):
+            raise IOError(f'Cannot create package {self.package_name}')
 
-    def build(self):
+    def build(self) -> None:
+        """Main build routine
+        """
         line = '=' * 30
         LOG.info(line)
         LOG.info('DEB PACKAGE BUILD')
         LOG.info(line)
         try:
             if not os.path.isdir('build'):
-                raise IOError('There is no project build! '
-                              'Run "setup.py build" and try again.')
+                raise IOError('There is no project build! Run "setup.py build" and try again.')
             self.clear_build()
             _make_dir(self.dst)
             self.copy_build()
@@ -319,8 +339,6 @@ class DebBuilder:
             LOG.error(e)
             LOG.warning(line)
             LOG.warning('BUILD FAILED!')
-            return 1
         LOG.info(line)
         LOG.info('BUILD SUCCESSFUL!')
         LOG.info(line)
-        return 0
