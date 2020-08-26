@@ -18,72 +18,91 @@
 
 import datetime
 import os
-import sys
+import typing as tp
 
 from .dist import SYSFACTS
+from . import fsutils
 
 
 TIMESTAMP = datetime.datetime.now().strftime("%Y%m%d")
-STDOUT_ENDC = '\033[0m'
 
 
-class Error(Exception):
-    pass
+def shell(cmd: str, times: int = 1) -> int:
+    """Retries execute command
+
+    :param cmd: (str) shell command
+    :param times: (int) times to retry
+    :return: (int) execution exit status
+    """
+    for _i in range(times):
+        if not os.system(cmd):
+            return 0
+    return 1
 
 
-def command(exec_cmd):
-    return os.system(exec_cmd)
+def clear_files(folder: str, ext: tp.Union[tp.List[str], str, None] = None) -> None:
+    """Removes files recursively by extension
+
+    :param folder: (str) working folder
+    :param ext: (str|list) target extension(s)
+    """
+    ext = 'py' if ext is None else ext
+    exts = [ext] if not isinstance(ext, list) else ext
+    for ext in exts:
+        for path in fsutils.get_files_tree(folder, ext):
+            if os.path.exists(path) and path.endswith(ext):
+                os.remove(path)
 
 
-def echo_msg(msg, newline=True, flush=True, code=''):
-    if newline:
-        msg += '\n'
-    if code:
-        msg = code + msg + STDOUT_ENDC
-    sys.stdout.write(msg)
-    if flush:
-        sys.stdout.flush()
+def is_path(pth: str) -> bool:
+    """Checks path existence
+
+    :param pth: (str) path string
+    :return: (bool) is path exists
+    """
+    return os.path.exists(pth)
 
 
-def is_path(pth):
-    return os.path.lexists(pth)
+def get_marker(use_timestamp: bool = True) -> str:
+    """Returns OS specific package marker
 
-
-def get_marker(timestamp=True):
+    :param use_timestamp: (bool) add timestamp flag
+    :return: (str) package marker
+    """
     ver = SYSFACTS.version
     mrk = SYSFACTS.marker
     if SYSFACTS.is_deb:
         if SYSFACTS.is_debian:
             ver = ver.split('.')[0]
         mrk = '_%s_%s_' % (SYSFACTS.marker, ver)
-        if timestamp:
+        if use_timestamp:
             mrk = '_%s%s' % (TIMESTAMP, mrk)
     elif SYSFACTS.is_rpm:
         if not SYSFACTS.is_opensuse and not ver.startswith('42'):
             ver = ver.split('.')[0]
         mrk = SYSFACTS.marker + ver
-        if timestamp:
+        if use_timestamp:
             mrk = '%s.%s' % (TIMESTAMP, mrk)
     return mrk
 
 
-def get_package_name(pth):
-    files = []
-    file_items = os.listdir(pth)
-    for fn in file_items:
-        if os.path.isfile(os.path.join(pth, fn)):
-            files.append(fn)
+def get_package_name(pth: str) -> str:
+    """Finds build result and returns the package name
+
+    :param pth: (str) working directory
+    :return: (str) package name
+    """
+    files = fsutils.get_filenames(pth)
     if SYSFACTS.is_deb:
         if len(files) == 1:
             if files[0].endswith('.deb') or files[0].endswith('.tar.gz'):
                 return files[0]
     elif SYSFACTS.is_rpm:
-        for fn in files:
-            if fn.endswith('.rpm') and not fn.endswith('src.rpm') \
-                    and 'debug' not in fn:
-                return fn
+        for fl in files:
+            if fl.endswith('.rpm') and not fl.endswith('src.rpm') and 'debug' not in fl:
+                return fl
     elif SYSFACTS.is_msw:
         if len(files) == 1:
             if files[0].endswith('.zip') or files[0].endswith('.msi'):
                 return files[0]
-    raise Error('Build failed! There is no build result.')
+    raise Exception('Build failed! There is no build result.')
