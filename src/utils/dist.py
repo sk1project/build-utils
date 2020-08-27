@@ -18,6 +18,7 @@
 
 import os
 import platform
+import typing as tp
 
 WINDOWS = 'Windows'
 LINUX = 'Linux'
@@ -28,6 +29,7 @@ MINT13 = 'LinuxMint 13'
 MINT17 = 'LinuxMint 17'
 MINT18 = 'LinuxMint 18'
 MINT19 = 'LinuxMint 19'
+MINT20 = 'LinuxMint 20'
 
 UBUNTU = 'Ubuntu'
 UBUNTU12 = 'Ubuntu 12'
@@ -37,6 +39,7 @@ UBUNTU16 = 'Ubuntu 16'
 UBUNTU17 = 'Ubuntu 17'
 UBUNTU18 = 'Ubuntu 18'
 UBUNTU19 = 'Ubuntu 19'
+UBUNTU20 = 'Ubuntu 20'
 
 DEBIAN = 'debian'
 DEBIAN7 = 'debian 7'
@@ -56,6 +59,7 @@ FEDORA28 = 'fedora 28'
 FEDORA29 = 'fedora 29'
 FEDORA30 = 'fedora 30'
 FEDORA31 = 'fedora 31'
+FEDORA32 = 'fedora 32'
 
 OPENSUSE = 'SuSE'
 OPENSUSE13 = 'SuSE 13'
@@ -64,6 +68,7 @@ OPENSUSE42_2 = 'SuSE 42.2'
 OPENSUSE42_3 = 'SuSE 42.3'
 OPENSUSE15_0 = 'SuSE 15.0'
 OPENSUSE15_1 = 'SuSE 15.1'
+OPENSUSE15_2 = 'SuSE 15.2'
 
 CENTOS = 'centos'
 CENTOS6 = 'centos 6'
@@ -80,22 +85,30 @@ MARKERS = {
 }
 
 
-def read_ini_file(path):
+def read_ini_file(path: str) -> tp.Dict[str, str]:
+    """Reads INI file as a JSON
+
+    :param path: (str) INI file path
+    :return: (dict) INI file data as a dict
+    """
     ret = {}
     if os.path.exists(path):
-        with open(path, 'r') as fileptr:
+        with open(path, 'r') as fp:
             while True:
-                line = fileptr.readline()
+                line = fp.readline()
                 if not line:
                     break
                 if '=' in line:
-                    parts = [part.strip().strip('"')
-                             for part in line.split('=')]
+                    parts = [part.strip().strip('"') for part in line.split('=')]
                     ret[parts[0]] = parts[1]
     return ret
 
 
-def get_dist():
+def get_dist() -> tp.Tuple[str, str]:
+    """Reads os-release file and returns distributive family and version
+
+    :return: (tuple) family and version strings
+    """
     release_data = read_ini_file('/etc/os-release')
     version = release_data.get('VERSION_ID')
     ini_name = release_data.get('NAME')
@@ -114,7 +127,8 @@ def get_dist():
     return family, version
 
 
-class SystemFacts(object):
+class SystemFacts:
+    """Singleton class. Collects Linux distro specific info."""
     def __init__(self):
         self.family, self.version = get_dist()
 
@@ -138,7 +152,7 @@ class SystemFacts(object):
         self.is_fedora = self.family == FEDORA
         self.is_opensuse = self.family == OPENSUSE
         self.is_centos = self.family == CENTOS
-        self.is_src = all([self.is_64bit, self.is_deb, self.version == '16.04'])
+        self.is_src = all([self.is_64bit, self.is_deb, self.version == '18.04'])
         self.marker = MARKERS.get(self.family, ('', 'unknown'))[0]
         self.hmarker = MARKERS.get(self.family, ('Unknown', ''))[1]
 
