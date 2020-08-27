@@ -112,10 +112,8 @@ def get_dist() -> tp.Tuple[str, str]:
     release_data = read_ini_file('/etc/os-release')
     version = release_data.get('VERSION_ID')
     ini_name = release_data.get('NAME')
-    name = {
-        'Linux Mint': 'LinuxMint',
-    }.get(ini_name, ini_name)
-    name = name.split()[0] if name else name
+    name = 'LinuxMint' if ini_name == 'Linux Mint' else ini_name
+    name = name.split()[0] if ' ' in name else name
     family = {
         'openSUSE': OPENSUSE,
         'Ubuntu': UBUNTU,
@@ -129,14 +127,13 @@ def get_dist() -> tp.Tuple[str, str]:
 
 class SystemFacts:
     """Singleton class. Collects Linux distro specific info."""
+
     def __init__(self):
         self.family, self.version = get_dist()
 
         # Workaround for Suse
-        if self.family == OPENSUSE:
-            self.sid = '%s %s' % (self.family, self.version)
-        else:
-            self.sid = '%s %s' % (self.family, self.version.split('.')[0])
+        version = self.version if self.family == OPENSUSE else self.version.split('.')[0]
+        self.sid = f'{self.family} {version}'
 
         self.arch = platform.architecture()[0]
         self.is_64bit = self.arch == '64bit'
