@@ -16,18 +16,27 @@
 # 	You should have received a copy of the GNU General Public License
 # 	along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from distutils.core import Extension
+import logging
 import os
 import platform
 import shutil
 import sys
-import logging
+import typing as tp
 
 from . import fsutils
 
+INIT_FILE = '__init__.py'
 LOG = logging.getLogger(__name__)
 
 
-def get_resources(pkg_path, path):
+def get_resources(pkg_path: str, path: str) -> tp.List[str]:
+    """Scans recursively python package resources
+
+    :param pkg_path: (str) path to python package
+    :param path: (str) path to package resource directory
+    :return: (list) list of resource directories with wildcard
+    """
     path = os.path.normpath(path)
     pkg_path = os.path.normpath(pkg_path)
     size = len(pkg_path) + 1
@@ -39,145 +48,141 @@ def get_resources(pkg_path, path):
     return res_dirs
 
 
-def clear_build():
-    """
-    Clears build result.
-    """
-    if os.path.exists('build'):
-        shutil.rmtree('build', ignore_errors=True)
-
-
-def clear_msw_build():
-    """
-    Clears build result on MS Windows.
+def clear_build() -> None:
+    """Clears build result.
     """
     if os.path.exists('build'):
         shutil.rmtree('build', ignore_errors=True)
 
 
-def make_source_list(path, file_list=None):
+def clear_msw_build() -> None:
+    """Clears build result on MS Windows.
     """
-    Returns list of paths for provided file list.
-    """
-    if file_list is None:
-        file_list = []
-    ret = []
-    for item in file_list:
-        ret.append(os.path.join(path, item))
-    return ret
+    if os.path.exists('build'):
+        shutil.rmtree('build', ignore_errors=True)
 
 
-INIT_FILE = '__init__.py'
+def make_source_list(path: str, file_list: tp.Optional[tp.List[str]] = None):
+    """Returns list of paths for provided file list.
+
+    :param path: (str) the directory path
+    :param file_list: (list) file names int the directory
+    :return: (list) file paths
+    """
+    return [os.path.join(path, item) for item in file_list or []]
 
 
 def is_package(path):
+    """Checks is provided directory a python package.
+
+    :param path: (str) directory path
+    :return: (bool) is directory a python package
     """
-    Checks is provided directory a python package.
-    """
-    if os.path.isdir(path) and '-' not in os.path.basename(path):
-        marker = os.path.join(path, INIT_FILE)
-        if os.path.isfile(marker):
-            return True
-    return False
+    return os.path.isdir(path) and '-' not in os.path.basename(path) and \
+        os.path.isfile(os.path.join(path, INIT_FILE))
 
 
-def get_packages(path):
-    """
-    Collects recursively python packages.
+def get_packages(path: str) -> tp.List[str]:
+    """Collects recursively python packages.
+
+    :param path: (str) root package path
+    :return: (list) recursive list of subpackages
     """
     packages = []
-    items = []
     if os.path.isdir(path):
         try:
-            items = os.listdir(path)
+            for item in os.listdir(path):
+                if item.startswith('.'):
+                    continue
+                folder = os.path.join(path, item)
+                if is_package(folder):
+                    packages.append(folder)
+                    packages += get_packages(folder)
         except os.error:
             pass
-        for item in items:
-            if item.startswith('.'):
-                continue
-            folder = os.path.join(path, item)
-            if is_package(folder):
-                packages.append(folder)
-                packages += get_packages(folder)
-    packages.sort()
-    return packages
+    return sorted(packages)
 
 
-def get_package_dirs(path='src', excludes=None):
+def get_package_dirs(path: str = 'src', excludes: tp.Optional[tp.List[str]] = None) -> tp.Dict[str, str]:
+    """Collects root packages.
+
+    :param path: (str) source root path
+    :param excludes: (list) excluded names
+    :return: (dict) package name/path dict
     """
-    Collects root packages.
-    """
-    if excludes is None:
-        excludes = []
+    excludes = excludes or []
     dirs = {}
-    items = []
     if os.path.isdir(path):
         try:
-            items = os.listdir(path)
+            for item in os.listdir(path):
+                if item in excludes or item.startswith('.'):
+                    continue
+                folder = os.path.join(path, item)
+                if is_package(folder):
+                    dirs[item] = folder
         except os.error:
             pass
-        for item in items:
-            if item in excludes:
-                continue
-            if item == '.svn':
-                continue
-            folder = os.path.join(path, item)
-            if is_package(folder):
-                dirs[item] = folder
     return dirs
 
 
-def get_source_structure(path='src', excludes=None):
+def get_source_structure(path: str = 'src', excludes: tp.Optional[tp.List[None]] = None) -> tp.List[str]:
+    """Returns recursive list of python packages.
+
+    :param path: (str) root source code directory, default 'src'
+    :param excludes: (list|None) list of excluded prefixes
+    :return: (list) list of python packages into source code directory
     """
-    Returns recursive list of python packages.
-    """
-    if excludes is None:
-        excludes = []
-    pkgs = []
+    excludes = excludes or []
+    packages = []
     for item in get_packages(path):
         res = item.replace('\\', '.').replace('/', '.').split('src.')[1]
-        check = True
-        for exclude in excludes:
-            if len(res) >= len(exclude) and res[:len(exclude)] == exclude:
-                check = False
-                break
-        if check:
-            pkgs.append(res)
-    return pkgs
+        if all([not res.startswith(exclude) for exclude in excludes]):
+            packages.append(res)
+    return packages
 
 
-def compile_sources(folder='build'):
-    """
-    Compiles python sources in build/ directory.
+def compile_sources(path: str = 'build') -> None:
+    """Compiles recursively python sources in provided directory.
+
+    :param path: (str) root source code directory, default 'build'
     """
     import compileall
-    compileall.compile_dir(folder, quiet=1)
+    compileall.compile_dir(path, quiet=1)
 
 
-def _find_extension(path, prefix, suffix):
+def _find_extension(path: str, prefix: str, suffix: str) -> tp.Optional[str]:
+    """Searches extension in directory by prefix and suffix
+
+    :param path: (str) extesion directory
+    :param prefix: (str) extension prefix
+    :param suffix: (str) extension suffix
+    :return: (str|None) extension file name or None
+    """
     for item in os.listdir(path):
         if item.startswith(prefix) and item.endswith(suffix):
             return item
 
 
-def copy_modules(modules, src_root='src'):
-    """
-    Copies native modules into src/
-    The routine implements build_update command
-    functionality and executed after "setup.py build" command.
+def copy_modules(modules: tp.List[Extension], src_root: str = 'src') -> None:
+    """Copies native modules into source code tree.
+    The routine implements 'build_update' command
+    functionality and executed after 'setup.py build' command.
+
+    :param modules: (list) distutils Extensions
+    :param src_root: (str) path to root source code directory
     """
     version = '.'.join(sys.version.split()[0].split('.')[:2])
     machine = platform.machine()
     ext = '.so'
-    prefix = 'build/lib.linux-' + machine + '-' + version
+    prefix = f'build/lib.linux-{machine}-{version}'
     marker = ''
 
     if os.name == 'nt' and platform.architecture()[0] == '32bit':
-        prefix = 'build/lib.win32-' + version
+        prefix = f'build/lib.win32-{version}'
         ext = '.pyd'
         marker = 'win32'
     elif os.name == 'nt' and platform.architecture()[0] == '64bit':
-        prefix = 'build/lib.win-amd64-' + version
+        prefix = f'build/lib.win-amd64-{version}'
         ext = '.pyd'
         marker = 'win64'
 
@@ -196,9 +201,8 @@ def copy_modules(modules, src_root='src'):
             os.remove(dst)
         shutil.copy(src, dst)
         if os.name == 'nt':
-            dst2 = os.path.join('%s-devres' % marker, 'pyd',
-                                os.path.basename(src))
+            dst2 = os.path.join(f'{marker}-devres', 'pyd', os.path.basename(src))
             if os.path.exists(dst2):
                 os.remove(dst2)
             shutil.copy(src, dst)
-        LOG.info('>>>Module %s has been copied to src/ directory', path)
+        LOG.info(f'>>>Module {path} has been copied to src/ directory')
