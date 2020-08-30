@@ -22,23 +22,25 @@
 import math
 import os
 import shutil
+import typing as tp
 
 from . import fsutils
 
 
-def dmg_build(targets=None,
-              dmg_filename='test.dmg',
-              volume_name='Install',
-              dist_dir='.', **_kwargs):
+def dmg_build(targets: tp.Optional[tp.List[str]] = None,
+              dmg_filename: str = 'test.dmg',
+              volume_name: str = 'Install',
+              dist_dir: str = '.',
+              **_kwargs) -> None:
     """
     DMG generation using genisoimage.
     Produces well blessed DMG image.
 
-    :param targets: target files and directories
-    :param dmg_filename:
-    :param volume_name: name for mounted volume
-    :param dist_dir: directory where saving DMG file
-    :param _kwargs: additional agrs
+    :param targets: (list) target files and directories
+    :param dmg_filename: (str) dmg file name
+    :param volume_name: (str) name for mounted volume
+    :param dist_dir: (str) directory where saving DMG file
+    :param _kwargs: (dict) optional agrs
     """
 
     if not targets:
@@ -60,24 +62,24 @@ def dmg_build(targets=None,
             shutil.copytree(item, dst)
 
     dmg_file = os.path.join(dist_dir, dmg_filename)
-    os.system('genisoimage -V "%s" -D -R -apple '
-              '-no-pad -o %s tmp_dmg' % (volume_name, dmg_file))
+    os.system(f'genisoimage -V "{volume_name}" -D -R -apple -no-pad -o {dmg_file} tmp_dmg')
     os.system('rm -rf tmp_dmg')
 
 
-def dmg_build2(targets=None,
-               dmg_filename='test.dmg',
-               volume_name='Install',
-               dist_dir='.', **_kwargs):
+def dmg_build2(targets: tp.Optional[tp.List[str]] = None,
+               dmg_filename: str = 'test.dmg',
+               volume_name: str = 'Install',
+               dist_dir: str = '.',
+               **_kwargs) -> None:
     """
     DMG generation using mkfs.hfsplus.
     Not perfect because there is no volume bless
 
-    :param targets: target files and directories
-    :param dmg_filename:
-    :param volume_name: name for mounted volume
-    :param dist_dir: directory where saving DMG file
-    :param _kwargs: additional agrs
+    :param targets: (list) target files and directories
+    :param dmg_filename: (str) dmg file name
+    :param volume_name: (str) name for mounted volume
+    :param dist_dir: (str) directory where saving DMG file
+    :param _kwargs: (dict) optional agrs
     """
 
     if not targets:
@@ -86,21 +88,19 @@ def dmg_build2(targets=None,
     sz = float(sum(fsutils.getsize(item) for item in targets))
     size = int(math.ceil(sz / 10 ** 6)) or 1
 
-    if os.path.exists('/tmp/%s' % dmg_filename):
-        os.remove('/tmp/%s' % dmg_filename)
+    if os.path.exists(f'/tmp/{dmg_filename}'):
+        os.remove(f'/tmp/{dmg_filename}')
 
     if os.path.exists('/mnt/tmp_dmg'):
         os.system('rm -rf /mnt/tmp_dmg')
 
     # File allocation
-    os.system('dd if=/dev/zero of=/tmp/%s bs=1M '
-              'count=%d status=progress' % (dmg_filename, size))
+    os.system(f'dd if=/dev/zero of=/tmp/{dmg_filename} bs=1M count={size} status=progress')
     # Formatting for HFS+
-    os.system('mkfs.hfsplus -v "%s" /tmp/%s' % (volume_name, dmg_filename))
+    os.system(f'mkfs.hfsplus -v "{volume_name}" /tmp/{dmg_filename}')
 
     # Mounting
-    os.system('mkdir -pv /mnt/tmp_dmg && '
-              'mount -o loop /tmp/%s /mnt/tmp_dmg' % dmg_filename)
+    os.system(f'mkdir -pv /mnt/tmp_dmg && mount -o loop /tmp/{dmg_filename} /mnt/tmp_dmg')
     # Copying
     for item in targets:
         if os.path.isfile(item):
@@ -112,4 +112,4 @@ def dmg_build2(targets=None,
     # Unmounting
     os.system('umount /mnt/tmp_dmg && rm -rf /mnt/tmp_dmg')
     dst = os.path.join(dist_dir, dmg_filename)
-    shutil.move('/tmp/%s' % dmg_filename, dst)
+    shutil.move(f'/tmp/{dmg_filename}', dst)
