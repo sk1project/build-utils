@@ -124,27 +124,31 @@ CP2_RPM_DEPENDENCIES = {
 }
 
 
-def get_uc2_deb_depend():
+def get_uc2_deb_depend() -> str:
+    """Returns UC2 dependencies string for Deb-based distros"""
     return UC2_DEB_DEPENDENCIES.get(SYSFACTS.sid, '')
 
 
-def get_sk1_deb_depend():
-    return ', '.join([get_uc2_deb_depend(),
-                      SK1_DEB_DEPENDENCIES.get(SYSFACTS.sid, '')])
+def get_sk1_deb_depend() -> str:
+    """Returns sK1 dependencies string for Deb-based distros"""
+    return ', '.join([get_uc2_deb_depend(), SK1_DEB_DEPENDENCIES.get(SYSFACTS.sid, '')])
 
 
-def get_cp2_deb_depend():
+def get_cp2_deb_depend() -> str:
+    """Returns Color Picker dependencies string for Deb-based distros"""
     return CP2_DEB_DEPENDENCIES.get(SYSFACTS.sid, CP2_DEB_DEFAULT)
 
 
-def get_uc2_rpm_depend():
+def get_uc2_rpm_depend() -> str:
+    """Returns UC2 dependencies string for RPM-based distros"""
     return UC2_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')
 
 
-def get_sk1_rpm_depend():
-    return ' '.join([get_uc2_rpm_depend(),
-                    SK1_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')])
+def get_sk1_rpm_depend() -> str:
+    """Returns sK1 dependencies string for RPM-based distros"""
+    return ' '.join([get_uc2_rpm_depend(), SK1_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')])
 
 
-def get_cp2_rpm_depend():
+def get_cp2_rpm_depend() -> str:
+    """Returns Color Picker dependencies string for RPM-based distros"""
     return CP2_RPM_DEPENDENCIES.get(SYSFACTS.sid, '')
