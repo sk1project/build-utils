@@ -23,30 +23,29 @@ import sys
 
 from dist import *
 
-DEB_GENERIC = 'liblcms2-2 (>=2.0), python (>=2.4), python (<<3.0), '
+DEB_GENERIC = 'liblcms2-2 (>=2.0), python (>=2.7), python (<<3.0), '
 DEB_GENERIC += 'python-cairo, '
 
 UC2_DEB_DEPENDENCIES = {
-    UBUNTU14: DEB_GENERIC + 'libmagickwand5, python-pil, python-reportlab',
-    UBUNTU15: DEB_GENERIC + 'libmagickwand5, python-pil, python-reportlab',
-    UBUNTU16: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil, python-reportlab',
-    UBUNTU17: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-reportlab',
-    UBUNTU18: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-reportlab'
-        # Workaround for Ubuntu 18.10
+    UBUNTU14: DEB_GENERIC + 'libmagickwand5, python-pil, python-cairo, python-reportlab',
+    UBUNTU15: DEB_GENERIC + 'libmagickwand5, python-pil, python-cairo, python-reportlab',
+    UBUNTU16: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil, python-cairo, python-reportlab',
+    UBUNTU17: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-cairo, python-reportlab',
+    UBUNTU18: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-cairo, python-reportlab'
         if platform.dist()[1] != '18.10' else
-        DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-reportlab',
-    UBUNTU19: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-reportlab',
-    UBUNTU20: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
+        DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-cairo, python-reportlab',
+    UBUNTU19: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-cairo, python-reportlab',
+    UBUNTU20: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-cairo',
 
-    MINT17: DEB_GENERIC + 'libmagickwand5, python-pil, python-reportlab',
-    MINT18: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil, python-reportlab',
-    MINT19: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-reportlab',
-    MINT20: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil',
+    MINT17: DEB_GENERIC + 'libmagickwand5, python-pil, python-cairo, python-reportlab',
+    MINT18: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil, python-cairo, python-reportlab',
+    MINT19: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-cairo, python-reportlab',
+    MINT20: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-cairo',
 
-    DEBIAN7: DEB_GENERIC + 'libmagickwand5, python-imaging, python-reportlab',
-    DEBIAN8: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil, python-reportlab',
-    DEBIAN9: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-reportlab',
-    DEBIAN10: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-reportlab',
+    DEBIAN7: DEB_GENERIC + 'libmagickwand5, python-imaging, python-cairo, python-reportlab',
+    DEBIAN8: DEB_GENERIC + 'libmagickwand-6.q16-2, python-pil, python-cairo, python-reportlab',
+    DEBIAN9: DEB_GENERIC + 'libmagickwand-6.q16-3, python-pil, python-cairo, python-reportlab',
+    DEBIAN10: DEB_GENERIC + 'libmagickwand-6.q16-6, python-pil, python-cairo, python-reportlab',
 }
 
 SK1_DEB_DEPENDENCIES = {
